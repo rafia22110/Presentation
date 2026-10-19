@@ -1,0 +1,186 @@
+import express from 'express';
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { GoogleGenAI } from '@google/genai';
+
+dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const ELEVENLABS_VOICE_ID = 'fuMEGqYpFlKTER3VqptM';
+const audioCache = new Map<string, { buffer: Buffer; mimeType: string }>();
+
+const ai = new GoogleGenAI();
+
+async function generateGeminiSpeech(text: string): Promise<Buffer | null> {
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-3.8-flash-lite-tts',
+      contents: [
+        {
+          role: 'user',
+          parts: [
+            {
+              text: text,
+              speechMetadata: {
+                style: 'Warm, joyful, gentle and expressive female educator telling a Bible story to 2nd grade children in natural Hebrew',
+              },
+            },
+          ],
+        },
+      ],
+      config: {
+        responseModalities: ['AUDIO'],
+        speechConfig: {
+          voiceConfig: {
+            prebuiltVoiceConfig: { voiceName: 'Kore' },
+          },
+        },
+      },
+    });
+
+    const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+    if (base64Audio) {
+      return Buffer.from(base64Audio, 'base64');
+    }
+  } catch (err) {
+    console.warn('Gemini TTS generation error:', err);
+  }
+  return null;
+}
+
+async function startServer() {
+  const app = express();
+  const PORT = Number(process.env.PORT) || 3000;
+
+  app.use(express.json());
+
+  // Status check endpoint for voice integration
+  app.get('/api/tts/status', (_req, res) => {
+    const apiKey = process.env.ELEVENLABS_API_KEY || '';
+    const isElevenLabsReady = apiKey.startsWith('sk_');
+
+    res.json({
+      elevenLabsConfigured: Boolean(apiKey),
+      elevenLabsValidPrefix: isElevenLabsReady,
+      voiceId: ELEVENLABS_VOICE_ID,
+      activeProvider: isElevenLabsReady ? 'ElevenLabs' : 'Gemini Neural TTS',
+      voiceName: isElevenLabsReady
+        ? 'ElevenLabs (נוֹעָה: fuMEGqYpFlKTER3VqptM)'
+        : 'נוֹעָה (קול נשי חם וטבעי - Gemini Neural AI)',
+    });
+  });
+
+  // TTS Proxy endpoint
+  app.post('/api/tts', async (req, res) => {
+    try {
+      const { text, voiceId = ELEVENLABS_VOICE_ID } = req.body;
+      if (!text || typeof text !== 'string') {
+        res.status(400).json({ error: 'Text is required', fallback: true });
+        return;
+      }
+
+      const trimmedText = text.trim();
+      const cacheKey = `${voiceId}:${trimmedText}`;
+
+      // Check cache first
+      if (audioCache.has(cacheKey)) {
+        const cached = audioCache.get(cacheKey)!;
+        res.setHeader('Content-Type', cached.mimeType);
+        res.setHeader('Content-Length', cached.buffer.length);
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+        res.send(cached.buffer);
+        return;
+      }
+
+      const apiKey = process.env.ELEVENLABS_API_KEY || '';
+
+      // 1. Try ElevenLabs if a valid secret API key (starting with sk_) is provided
+      if (apiKey.startsWith('sk_')) {
+        try {
+          const elevenResponse = await fetch(
+            `https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(voiceId)}?output_format=mp3_44100_128`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'xi-api-key': apiKey,
+              },
+              body: JSON.stringify({
+                text: trimmedText,
+                model_id: 'eleven_multilingual_v2',
+                voice_settings: {
+                  stability: 0.5,
+                  similarity_boost: 0.8,
+                  style: 0.25,
+                  use_speaker_boost: true,
+                },
+              }),
+            }
+          );
+
+          if (elevenResponse.ok) {
+            const arrayBuffer = await elevenResponse.arrayBuffer();
+            const buffer = Buffer.from(arrayBuffer);
+            audioCache.set(cacheKey, { buffer, mimeType: 'audio/mpeg' });
+
+            res.setHeader('Content-Type', 'audio/mpeg');
+            res.setHeader('Content-Length', buffer.length);
+            res.setHeader('Cache-Control', 'public, max-age=86400');
+            res.send(buffer);
+            return;
+          } else {
+            const errText = await elevenResponse.text();
+            console.warn('ElevenLabs API response not ok, switching to Gemini TTS:', errText);
+          }
+        } catch (elevenErr) {
+          console.warn('ElevenLabs fetch failed, switching to Gemini TTS:', elevenErr);
+        }
+      } else if (apiKey) {
+        console.warn(
+          'ELEVENLABS_API_KEY does not start with "sk_". ElevenLabs keys must be secret keys starting with "sk_". Falling back to Gemini Neural TTS.'
+        );
+      }
+
+      // 2. High-Fidelity Neural Fallback: Gemini Flash Lite TTS (Kore female voice)
+      const geminiWavBuffer = await generateGeminiSpeech(trimmedText);
+      if (geminiWavBuffer) {
+        audioCache.set(cacheKey, { buffer: geminiWavBuffer, mimeType: 'audio/wav' });
+
+        res.setHeader('Content-Type', 'audio/wav');
+        res.setHeader('Content-Length', geminiWavBuffer.length);
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+        res.send(geminiWavBuffer);
+        return;
+      }
+
+      // 3. Fallback to browser SpeechSynthesis if all serverside TTS failed
+      res.status(200).json({ fallback: true, reason: 'All TTS engines failed' });
+    } catch (err: unknown) {
+      console.error('Error in /api/tts endpoint:', err);
+      res.status(200).json({ fallback: true, error: (err as Error).message });
+    }
+  });
+
+  if (process.env.NODE_ENV === 'production') {
+    app.use(express.static(path.resolve(__dirname, 'dist')));
+    app.get('*', (_req, res) => {
+      res.sendFile(path.resolve(__dirname, 'dist', 'index.html'));
+    });
+  } else {
+    const { createServer } = await import('vite');
+    const vite = await createServer({
+      server: { middlewareMode: true },
+      appType: 'spa',
+    });
+    app.use(vite.middlewares);
+  }
+
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running at http://localhost:${PORT}`);
+  });
+}
+
+startServer();

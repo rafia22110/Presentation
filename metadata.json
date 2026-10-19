@@ -1,0 +1,6 @@
+{
+  "name": "בריאת העולם 3D - מצגת אינטראקטיבית לכיתה ב'",
+  "description": "מסע קסום בתלת-ממד בסגנון דיסני-פיקסל ללימוד סיפור בריאת העולם לתלמידי כיתה ב', בליווי המדריכה נועה, צלילים קסומים ומשחק סיכום.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
