@@ -195,6 +195,18 @@ export const FemaleGuideAvatar: React.FC<FemaleGuideAvatarProps> = ({
             <HelpCircle className="w-3.5 h-3.5" />
             <span className="nikud-text">רֶמֶז מִנּוֹעָה 💡</span>
           </button>
+
+          <button
+            onClick={() => {
+              audioService.playClick();
+              narrationService.playElevenLabsVoiceSample();
+            }}
+            className="disney-btn bg-gradient-to-r from-purple-400 to-indigo-400 hover:brightness-105 text-indigo-950 font-bold px-3 py-1.5 rounded-xl text-xs sm:text-sm flex items-center gap-1 shadow-sm"
+            title="הַשְׁמֵעַ דְּגִימַת קוֹל יְשִׁירָה מִקּוֹבֶץ ElevenLabs (fuMEGqYpFlKTER3VqptM)"
+          >
+            <span>🎙️</span>
+            <span className="nikud-text">דֻּגְמַת ElevenLabs</span>
+          </button>
         </div>
 
       </div>

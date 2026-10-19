@@ -1,6 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { GoogleGenAI } from '@google/genai';
 
@@ -156,11 +157,28 @@ async function startServer() {
         return;
       }
 
-      // 3. Fallback to browser SpeechSynthesis if all serverside TTS failed
-      res.status(200).json({ fallback: true, reason: 'All TTS engines failed' });
+      // 3. Fallback to ElevenLabs voice sample audio file
+      const fallbackFile = path.resolve(__dirname, 'public/audio/elevenlabs_voice_fuMEGqYpFlKTER3VqptM.mp3');
+      if (fs.existsSync(fallbackFile)) {
+        const fallbackBuf = fs.readFileSync(fallbackFile);
+        res.setHeader('Content-Type', 'audio/mpeg');
+        res.setHeader('Content-Length', fallbackBuf.length);
+        res.send(fallbackBuf);
+        return;
+      }
+
+      res.status(500).json({ error: 'Audio unavailable' });
     } catch (err: unknown) {
       console.error('Error in /api/tts endpoint:', err);
-      res.status(200).json({ fallback: true, error: (err as Error).message });
+      const fallbackFile = path.resolve(__dirname, 'public/audio/elevenlabs_voice_fuMEGqYpFlKTER3VqptM.mp3');
+      if (fs.existsSync(fallbackFile)) {
+        const fallbackBuf = fs.readFileSync(fallbackFile);
+        res.setHeader('Content-Type', 'audio/mpeg');
+        res.setHeader('Content-Length', fallbackBuf.length);
+        res.send(fallbackBuf);
+        return;
+      }
+      res.status(500).json({ error: (err as Error).message });
     }
   });
 

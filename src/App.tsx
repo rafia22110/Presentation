@@ -79,7 +79,7 @@ export default function App() {
       const slide = slidesData[currentSlideIndex];
       if (slide) {
         const textToRead = `${slide.badge}. ${slide.title}. ${slide.verse}. ${slide.story}`;
-        narrationService.speak(textToRead);
+        narrationService.speak(textToRead, undefined, undefined, slide.id);
       }
     }
   };
