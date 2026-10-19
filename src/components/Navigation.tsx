@@ -20,7 +20,7 @@ export const Navigation: React.FC<NavigationProps> = ({
   };
 
   return (
-    <nav className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-9 gap-2 w-full mt-2">
+    <nav className="grid grid-cols-2 sm:grid-cols-5 md:grid-cols-10 gap-2 w-full mt-2">
       {slidesData.map((slide, idx) => {
         const isActive = currentSlideIndex === idx;
         const isDone = answeredSlides.has(idx);
@@ -53,6 +53,19 @@ export const Navigation: React.FC<NavigationProps> = ({
       >
         <span>🎮</span>
         <span>מִשְׂחָק!</span>
+      </button>
+
+      {/* 10th Button: Genesis Difficult Words Dictionary */}
+      <button
+        onClick={() => handleClick(9)}
+        className={`disney-btn font-bold py-2 px-1.5 rounded-xl text-xs sm:text-sm flex items-center justify-center gap-1 transition-all nikud-text ${
+          currentSlideIndex === 9
+            ? 'bg-cyan-400 text-slate-950 active-tab ring-3 ring-cyan-200'
+            : 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:brightness-105'
+        }`}
+      >
+        <span>📘</span>
+        <span>מִלּוֹן</span>
       </button>
     </nav>
   );

@@ -29,4 +29,15 @@ export interface GameQuestion {
   hint: string;
 }
 
+export interface DictionaryWord {
+  id: number;
+  word: string;
+  day: number;
+  dayLabel: string;
+  emoji: string;
+  simpleMeaning: string;
+  kidExample: string;
+  verseQuote: string;
+}
+
 export type ViewMode = '3d' | 'pixel' | 'both';

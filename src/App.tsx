@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { slidesData } from './data/slidesData';
-import { ViewMode } from './types';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { Volume2, VolumeX } from 'lucide-react';
+import { slidesData, dictionaryWords, gameQuestions } from './data/slidesData';
+import { ViewMode, DictionaryWord } from './types';
 import { audioService } from './services/audioService';
 import { narrationService } from './services/narrationService';
 import { Header } from './components/Header';
@@ -15,6 +16,7 @@ import { PixelCanvas } from './components/PixelCanvas';
 import { FemaleGuideAvatar } from './components/FemaleGuideAvatar';
 import { MiniQuiz } from './components/MiniQuiz';
 import { SummaryGame } from './components/SummaryGame';
+import { DictionaryModule } from './components/DictionaryModule';
 import { Footer } from './components/Footer';
 
 export default function App() {
@@ -26,6 +28,7 @@ export default function App() {
   const [isMuted, setIsMuted] = useState(false);
   const [isBgmPlaying, setIsBgmPlaying] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [selectedQuickWord, setSelectedQuickWord] = useState<DictionaryWord | null>(null);
 
   // Sync speech state from narrationService
   useEffect(() => {
@@ -38,6 +41,7 @@ export default function App() {
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.target as HTMLElement)?.tagName === 'INPUT') return;
       if (e.key === 'ArrowLeft') {
         goToNextSlide();
       } else if (e.key === 'ArrowRight') {
@@ -50,12 +54,13 @@ export default function App() {
 
   const goToSlide = useCallback((index: number) => {
     narrationService.stop();
+    setSelectedQuickWord(null);
     setCurrentSlideIndex(index);
     audioService.playMagicChime();
   }, []);
 
   const goToNextSlide = () => {
-    if (currentSlideIndex < 8) {
+    if (currentSlideIndex < 9) {
       goToSlide(currentSlideIndex + 1);
     }
   };
@@ -75,6 +80,14 @@ export default function App() {
   const handleToggleSpeech = () => {
     if (isSpeaking) {
       narrationService.stop();
+      return;
+    }
+
+    if (currentSlideIndex === 9) {
+      narrationService.speakFullDictionary(dictionaryWords);
+    } else if (currentSlideIndex === 8) {
+      const q = gameQuestions[0];
+      narrationService.speak(`מִשְׂחַק אֲלוּפֵי הַבְּרִיאָה! בְּאֵיזֶה יוֹם נִבְרָא: ${q.name}?`);
     } else {
       const slide = slidesData[currentSlideIndex];
       if (slide) {
@@ -113,6 +126,24 @@ export default function App() {
 
   const currentSlide = slidesData[currentSlideIndex] || slidesData[0];
   const isGameView = currentSlideIndex === 8;
+  const isDictionaryView = currentSlideIndex === 9;
+
+  // Words relevant to the current day slide
+  const currentDayWords = useMemo(() => {
+    if (isGameView || isDictionaryView) return [];
+    return dictionaryWords.filter(
+      (w) =>
+        w.day === currentSlide.id ||
+        (currentSlide.id === 1 && w.word === 'תֹהוּ וָבֹהוּ') ||
+        (currentSlide.id === 2 && w.word === 'וַיַּבְדֵּל')
+    );
+  }, [currentSlide.id, isGameView, isDictionaryView]);
+
+  const handleSelectQuickWord = (wordObj: DictionaryWord) => {
+    audioService.playMagicChime();
+    setSelectedQuickWord(wordObj);
+    narrationService.speakDictionaryWord(wordObj);
+  };
 
   return (
     <div className="min-h-screen flex flex-col justify-between p-2 sm:p-4 md:p-6 relative overflow-x-hidden">
@@ -122,7 +153,7 @@ export default function App() {
       <div className="liquid-bg-orb w-96 h-96 bg-purple-600/40 bottom-8 -left-20" style={{ animationDelay: '-5s' }} />
       <div className="liquid-bg-orb w-72 h-72 bg-amber-400/30 top-1/3 left-1/3" style={{ animationDelay: '-9s' }} />
 
-      {/* Header with App Title, Audio Controls & Star Count */}
+      {/* Header with App Title, Dictionary button, Noa TTS button, Audio Controls & Star Count */}
       <Header
         stars={stars}
         isMuted={isMuted}
@@ -131,9 +162,13 @@ export default function App() {
         onToggleBgm={handleToggleBgm}
         viewMode={viewMode}
         onChangeViewMode={setViewMode}
+        onOpenDictionary={() => goToSlide(9)}
+        isDictionaryActive={isDictionaryView}
+        isSpeaking={isSpeaking}
+        onSpeakCurrent={handleToggleSpeech}
       />
 
-      {/* Navigation Days Bar */}
+      {/* Navigation Bar (Days 0-7 + Game + Dictionary) */}
       <div className="max-w-6xl w-full mx-auto relative z-10 mb-2">
         <Navigation
           currentSlideIndex={currentSlideIndex}
@@ -146,14 +181,17 @@ export default function App() {
       <main className="max-w-6xl w-full mx-auto flex-grow flex items-center justify-center my-1 relative z-10">
         <div className="disney-frame w-full p-4 sm:p-6 md:p-7">
           
-          {isGameView ? (
-            /* Summary Game Module */
+          {isDictionaryView ? (
+            /* Genesis Difficult Words Dictionary Module (Slide 9) */
+            <DictionaryModule isSpeaking={isSpeaking} />
+          ) : isGameView ? (
+            /* Summary Game Module (Slide 8) */
             <SummaryGame
               onEarnStar={handleGameEarnStar}
               onGoToDay={goToSlide}
             />
           ) : (
-            /* Slide Learning View */
+            /* Slide Learning View (Slides 0-7) */
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
               
               {/* Left Column: Visual Canvas (3D and/or Pixel) + Female Guide Avatar Noa */}
@@ -219,7 +257,7 @@ export default function App() {
 
               </div>
 
-              {/* Right Column: Content, Biblical Torah Verse, Story & Mini Quiz */}
+              {/* Right Column: Content, Biblical Torah Verse, Story, Difficult Words & Mini Quiz */}
               <div className="lg:col-span-5 flex flex-col justify-between space-y-3">
                 
                 {/* Title & Emoji Card */}
@@ -245,7 +283,7 @@ export default function App() {
                   </p>
                 </div>
 
-                {/* Story Explanation in simple 2nd-grade Hebrew */}
+                {/* Story Explanation + Created Items + Per-Day Difficult Words Popup */}
                 <div className="bg-gradient-to-br from-white/95 to-slate-50/90 border border-cyan-200/80 rounded-2xl p-3.5 shadow-sm">
                   <p className="text-base sm:text-lg text-slate-800 font-medium nikud-text leading-relaxed">
                     {currentSlide.story}
@@ -262,6 +300,73 @@ export default function App() {
                       </span>
                     ))}
                   </div>
+
+                  {/* Difficult Words of the Day (Click to open immediate explanation + Noa narration) */}
+                  {currentDayWords.length > 0 && (
+                    <div className="mt-3 pt-2.5 border-t border-amber-300/70">
+                      <div className="text-xs sm:text-sm font-bold text-indigo-900 mb-1.5 flex items-center justify-between nikud-text">
+                        <span>🔍 מִלִּים חֲדָשׁוֹת בַּיּוֹם הַזֶּה (לִחֲצוּ לְפֵרוּשׁ):</span>
+                        <button
+                          onClick={() => goToSlide(9)}
+                          className="text-cyan-700 hover:text-cyan-900 underline text-xs font-bold cursor-pointer"
+                        >
+                          לְכָל הַמִּלּוֹן ⬅️
+                        </button>
+                      </div>
+
+                      <div className="flex flex-wrap gap-1.5">
+                        {currentDayWords.map((wObj) => {
+                          const isSelected = selectedQuickWord?.id === wObj.id;
+                          return (
+                            <button
+                              key={wObj.id}
+                              onClick={() => handleSelectQuickWord(wObj)}
+                              className={`disney-btn font-bold px-3 py-1 rounded-xl text-xs sm:text-sm flex items-center gap-1 border nikud-text transition-all ${
+                                isSelected
+                                  ? 'bg-gradient-to-b from-amber-300 to-amber-400 text-amber-950 border-amber-500 ring-2 ring-cyan-400'
+                                  : 'bg-gradient-to-b from-cyan-100 to-cyan-200 hover:from-cyan-200 hover:to-cyan-300 text-indigo-950 border-cyan-400'
+                              }`}
+                            >
+                              <span>{wObj.emoji}</span>
+                              <span>{wObj.word}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {selectedQuickWord && (
+                        <div className="mt-2.5 p-3 rounded-2xl bg-gradient-to-r from-amber-100 via-white to-cyan-50 border-2 border-amber-400 text-slate-800 text-sm sm:text-base shadow-md nikud-text animate-fadeIn">
+                          <div className="flex items-center justify-between gap-2 mb-1">
+                            <span className="font-bold text-indigo-950 text-base sm:text-lg">
+                              {selectedQuickWord.emoji} {selectedQuickWord.word}:
+                            </span>
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                onClick={() => narrationService.speakDictionaryWord(selectedQuickWord)}
+                                className="disney-btn bg-cyan-500 hover:bg-cyan-400 text-white px-2.5 py-1 rounded-xl text-xs font-bold flex items-center gap-1"
+                              >
+                                <Volume2 className="w-3.5 h-3.5" />
+                                <span>🔊 הַקְרֵא (נוֹעָה)</span>
+                              </button>
+                              <button
+                                onClick={() => setSelectedQuickWord(null)}
+                                className="text-slate-400 hover:text-slate-700 font-bold px-1.5 text-xs"
+                                title="סְגֹר"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          </div>
+                          <p className="font-bold text-emerald-900">
+                            ✨ {selectedQuickWord.simpleMeaning}
+                          </p>
+                          <p className="text-xs sm:text-sm text-slate-700 mt-1">
+                            💡 <strong>דּוּגְמָה:</strong> {selectedQuickWord.kidExample}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Mini Quiz for each slide */}
@@ -284,7 +389,7 @@ export default function App() {
       {/* Footer with Previous / Next Buttons and Progress Dots */}
       <Footer
         currentSlideIndex={currentSlideIndex}
-        totalSlides={9}
+        totalSlides={10}
         onPrev={goToPrevSlide}
         onNext={goToNextSlide}
         onSelectSlide={goToSlide}

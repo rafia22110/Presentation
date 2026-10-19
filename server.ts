@@ -15,39 +15,66 @@ const audioCache = new Map<string, { buffer: Buffer; mimeType: string }>();
 
 const ai = new GoogleGenAI();
 
+function pcmToWav(pcmBuffer: Buffer, sampleRate = 24000, numChannels = 1, bitsPerSample = 16): Buffer {
+  if (pcmBuffer.length >= 4 && pcmBuffer.subarray(0, 4).toString('ascii') === 'RIFF') {
+    return pcmBuffer;
+  }
+  const byteRate = (sampleRate * numChannels * bitsPerSample) / 8;
+  const blockAlign = (numChannels * bitsPerSample) / 8;
+  const dataSize = pcmBuffer.length;
+  const header = Buffer.alloc(44);
+
+  header.write('RIFF', 0);
+  header.writeUInt32LE(36 + dataSize, 4);
+  header.write('WAVE', 8);
+  header.write('fmt ', 12);
+  header.writeUInt32LE(16, 16); // Subchunk1Size (16 for PCM)
+  header.writeUInt16LE(1, 20);  // AudioFormat (1 = PCM)
+  header.writeUInt16LE(numChannels, 22);
+  header.writeUInt32LE(sampleRate, 24);
+  header.writeUInt32LE(byteRate, 28);
+  header.writeUInt16LE(blockAlign, 32);
+  header.writeUInt16LE(bitsPerSample, 34);
+  header.write('data', 36);
+  header.writeUInt32LE(dataSize, 40);
+
+  return Buffer.concat([header, pcmBuffer]);
+}
+
 async function generateGeminiSpeech(text: string): Promise<Buffer | null> {
-  try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.8-flash-lite-tts',
-      contents: [
-        {
-          role: 'user',
-          parts: [
-            {
-              text: text,
-              speechMetadata: {
-                style: 'Warm, joyful, gentle and expressive female educator telling a Bible story to 2nd grade children in natural Hebrew',
+  const models = ['gemini-2.5-flash-preview-tts', 'gemini-3.8-flash-tts', 'gemini-3.8-flash-lite-tts'];
+  for (const modelName of models) {
+    try {
+      const response = await ai.models.generateContent({
+        model: modelName,
+        contents: [
+          {
+            role: 'user',
+            parts: [
+              {
+                text: `קראי בקול נשי חם, נעים, שמח וברור המותאם לילדים בכיתה ב': ${text}`,
               },
+            ],
+          },
+        ],
+        config: {
+          responseModalities: ['AUDIO'],
+          speechConfig: {
+            voiceConfig: {
+              prebuiltVoiceConfig: { voiceName: 'Aoede' },
             },
-          ],
-        },
-      ],
-      config: {
-        responseModalities: ['AUDIO'],
-        speechConfig: {
-          voiceConfig: {
-            prebuiltVoiceConfig: { voiceName: 'Kore' },
           },
         },
-      },
-    });
+      });
 
-    const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
-    if (base64Audio) {
-      return Buffer.from(base64Audio, 'base64');
+      const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+      if (base64Audio) {
+        const rawBuffer = Buffer.from(base64Audio, 'base64');
+        return pcmToWav(rawBuffer, 24000, 1, 16);
+      }
+    } catch (err) {
+      console.warn(`Gemini TTS generation error with ${modelName}:`, err);
     }
-  } catch (err) {
-    console.warn('Gemini TTS generation error:', err);
   }
   return null;
 }
@@ -145,10 +172,21 @@ async function startServer() {
         );
       }
 
-      // 2. High-Fidelity Neural Fallback: Gemini Flash Lite TTS (Kore female voice)
+      // 2. High-Fidelity Neural Fallback: Gemini TTS (Aoede female voice)
       const geminiWavBuffer = await generateGeminiSpeech(trimmedText);
       if (geminiWavBuffer) {
         audioCache.set(cacheKey, { buffer: geminiWavBuffer, mimeType: 'audio/wav' });
+
+        if (typeof req.body.wordId === 'number' && req.body.wordId >= 0 && req.body.wordId <= 16) {
+          try {
+            const wordFilePath = path.resolve(__dirname, `public/audio/word_${req.body.wordId}.wav`);
+            if (!fs.existsSync(wordFilePath)) {
+              fs.writeFileSync(wordFilePath, geminiWavBuffer);
+            }
+          } catch (writeErr) {
+            console.warn('Could not write word audio file:', writeErr);
+          }
+        }
 
         res.setHeader('Content-Type', 'audio/wav');
         res.setHeader('Content-Length', geminiWavBuffer.length);

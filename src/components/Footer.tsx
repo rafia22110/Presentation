@@ -48,7 +48,7 @@ export const Footer: React.FC<FooterProps> = ({
                   ? 'w-8 bg-amber-400 shadow-[0_0_10px_#f59e0b]'
                   : 'w-3 bg-amber-800/80 hover:bg-amber-600'
               }`}
-              title={`עֲבֹר לְשִׁקּוּפִית ${idx === 8 ? 'מִשְׂחָק' : idx}`}
+              title={`עֲבֹר לְשִׁקּוּפִית ${idx === 9 ? 'מִלּוֹן' : idx === 8 ? 'מִשְׂחָק' : idx}`}
             />
           ))}
         </div>

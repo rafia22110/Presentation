@@ -1,0 +1,2132 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>בְּרִיאַת הָעוֹלָם - מַצֶּגֶת לְכִתָּה ב'</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Varela+Round&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #FFD700;
+            --gold-dark: #D4AF37;
+            --wood-dark: #4A2E1B;
+            --wood-light: #7C4D2B;
+            --parchment: #FFFDF5;
+            --holo-cyan: #00f2fe;
+            --holo-blue: #4facfe;
+        }
+
+        body {
+            font-family: 'Fredoka', 'Varela Round', sans-serif;
+            user-select: none;
+            overflow-x: hidden;
+            background: radial-gradient(circle at 50% 20%, #1e1338 0%, #090514 70%, #030108 100%);
+            min-height: 100vh;
+            perspective: 1200px;
+        }
+
+        /* בועות נוזליות תלת-ממדיות חיות ברקע */
+        @keyframes liquidFloat {
+            0%, 100% {
+                border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+                transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+            }
+            33% {
+                border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%;
+                transform: translate3d(20px, -25px, 30px) rotate(8deg) scale(1.06);
+            }
+            66% {
+                border-radius: 50% 50% 35% 65% / 35% 65% 50% 50%;
+                transform: translate3d(-15px, 15px, -20px) rotate(-6deg) scale(0.96);
+            }
+        }
+
+        .liquid-bg-orb {
+            position: fixed;
+            pointer-events: none;
+            z-index: 0;
+            filter: blur(28px);
+            opacity: 0.45;
+            animation: liquidFloat 14s ease-in-out infinite;
+        }
+
+        /* אפקט פיקסל ארט חד וברור לציורים */
+        .pixel-canvas {
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+
+        /* מסגרת תלת-ממדית נוזלית וקסומה (Liquid 3D Glass & Gold) */
+        .disney-frame {
+            border: 3px solid rgba(255, 215, 0, 0.75);
+            box-shadow: 
+                0 25px 60px rgba(0, 0, 0, 0.75),
+                0 0 35px rgba(0, 242, 254, 0.22),
+                inset 0 2px 15px rgba(255, 255, 255, 0.85),
+                inset 0 -8px 25px rgba(212, 175, 55, 0.3);
+            background: linear-gradient(135deg, rgba(255, 253, 245, 0.96) 0%, rgba(245, 249, 255, 0.92) 100%);
+            backdrop-filter: blur(20px);
+            border-radius: 2.2rem;
+            position: relative;
+            z-index: 10;
+            transform-style: preserve-3d;
+            transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease;
+        }
+
+        /* כפתורי ג'לי נוזלי תלת-ממדיים (3D Liquid Buttons) */
+        .pixel-btn {
+            border: 2px solid rgba(255, 255, 255, 0.65);
+            box-shadow: 
+                0 8px 0 rgba(35, 20, 60, 0.75),
+                0 12px 24px rgba(0, 0, 0, 0.35),
+                inset 0 4px 8px rgba(255, 255, 255, 0.75),
+                inset 0 -4px 8px rgba(0, 0, 0, 0.15);
+            border-radius: 1.25rem;
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .pixel-btn::before {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 10%;
+            width: 80%;
+            height: 38%;
+            background: linear-gradient(180deg, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0) 100%);
+            border-radius: 999px;
+            pointer-events: none;
+        }
+        .pixel-btn:hover {
+            transform: translateY(-4px) scale(1.04);
+            box-shadow: 
+                0 12px 0 rgba(35, 20, 60, 0.75),
+                0 18px 30px rgba(0, 242, 254, 0.35),
+                inset 0 4px 10px rgba(255, 255, 255, 0.9);
+            filter: brightness(1.08);
+        }
+        .pixel-btn:active, .pixel-btn.active-tab {
+            transform: translateY(4px) scale(0.98);
+            box-shadow: 
+                0 3px 0 rgba(35, 20, 60, 0.8),
+                0 0 25px rgba(0, 242, 254, 0.75),
+                inset 0 3px 8px rgba(255, 255, 255, 0.9);
+        }
+
+        /* אלומת אור הולוגרפית מונפשת (Hologram Beam) */
+        @keyframes beamPulse {
+            0%, 100% { opacity: 0.55; transform: scaleX(1); }
+            50% { opacity: 0.85; transform: scaleX(1.06); }
+        }
+        @keyframes scanlines {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 40px; }
+        }
+        @keyframes holoPop {
+            0% { opacity: 0; transform: scaleY(0.05) scaleX(0.3) translateY(80px); filter: brightness(2.5) blur(8px); }
+            60% { opacity: 1; transform: scaleY(1.04) scaleX(1.02) translateY(-4px); filter: brightness(1.3) blur(0px); }
+            100% { opacity: 1; transform: scaleY(1) scaleX(1) translateY(0); filter: brightness(1); }
+        }
+
+        .holo-beam-cone {
+            position: absolute;
+            bottom: -10px;
+            left: 10%;
+            width: 80%;
+            height: 95%;
+            background: conic-gradient(from 180deg at 50% 100%, transparent 135deg, rgba(0, 242, 254, 0.38) 168deg, rgba(255, 255, 255, 0.55) 180deg, rgba(0, 242, 254, 0.38) 192deg, transparent 225deg);
+            filter: blur(8px);
+            pointer-events: none;
+            z-index: 12;
+            animation: beamPulse 3s infinite ease-in-out;
+        }
+
+        .holo-scan-overlay {
+            position: absolute;
+            inset: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 242, 254, 0.06) 0px,
+                rgba(0, 242, 254, 0.06) 2px,
+                transparent 2px,
+                transparent 6px
+            );
+            animation: scanlines 2.5s linear infinite;
+            pointer-events: none;
+            z-index: 15;
+        }
+
+        .holo-emitter-ring {
+            position: absolute;
+            bottom: 4px;
+            left: 50%;
+            transform: translateX(-50%) rotateX(72deg);
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 4px solid #00f2fe;
+            box-shadow: 0 0 25px #00f2fe, inset 0 0 25px #00f2fe;
+            pointer-events: none;
+            z-index: 14;
+        }
+
+        .holo-burst-anim {
+            animation: holoPop 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* כרטיסים נוזליים פנימיים */
+        .liquid-card {
+            background: linear-gradient(145deg, rgba(255,255,255,0.92), rgba(240,248,255,0.82));
+            border: 2px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 
+                0 10px 25px rgba(15, 23, 42, 0.08),
+                inset 0 2px 6px rgba(255, 255, 255, 1);
+            border-radius: 1.5rem;
+            backdrop-filter: blur(12px);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+        .liquid-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 30px rgba(0, 180, 255, 0.14), inset 0 2px 8px rgba(255, 255, 255, 1);
+        }
+
+        /* תיבת פסוק מהתורה בשדרוג תלת-ממדי נוזלי */
+        .torah-scroll {
+            background: linear-gradient(90deg, #f3e2c7 0%, #fffdf7 15%, #fffdf7 85%, #f3e2c7 100%);
+            border-top: 3px solid #d4af37;
+            border-bottom: 3px solid #d4af37;
+            border-right: 12px solid #8B5A2B;
+            border-left: 12px solid #8B5A2B;
+            box-shadow: 0 10px 25px rgba(139, 90, 43, 0.2), inset 0 2px 8px rgba(255,255,255,0.8);
+            border-radius: 1.2rem;
+        }
+
+        /* עיצוב מותאם לקריאה נוחה בכיתה ב' */
+        .nikud-text {
+            line-height: 1.75;
+            letter-spacing: 0.02em;
+        }
+    </style>
+</head>
+<body class="text-slate-800 flex flex-col justify-between p-2 sm:p-4 md:p-6 relative">
+
+    <div class="liquid-bg-orb w-80 h-80 bg-cyan-500/40 top-6 -right-16"></div>
+    <div class="liquid-bg-orb w-96 h-96 bg-purple-600/40 bottom-8 -left-20" style="animation-delay: -5s;"></div>
+    <div class="liquid-bg-orb w-72 h-72 bg-amber-400/30 top-1/3 left-1/3" style="animation-delay: -9s;"></div>
+
+    <header class="max-w-6xl w-full mx-auto mb-3 relative z-10">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-3 bg-indigo-950/75 border-2 border-cyan-400/60 rounded-3xl p-3.5 shadow-[0_15px_35px_rgba(0,0,0,0.6),0_0_20px_rgba(0,242,254,0.2)] backdrop-blur-xl">
+            
+            <!-- כותרת ראשית -->
+            <div class="flex items-center gap-3">
+                <div class="w-13 h-13 p-2.5 rounded-2xl bg-gradient-to-br from-cyan-300 via-amber-300 to-amber-500 border-2 border-white flex items-center justify-center shadow-[0_0_20px_rgba(0,242,254,0.6)] text-2xl">
+                    🔮
+                </div>
+                <div>
+                    <h1 class="text-2xl sm:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-cyan-200 to-amber-300 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] nikud-text">
+                        בְּרִיאַת הָעוֹלָם - הוֹלוֹגְרָמָה 3D
+                    </h1>
+                    <p class="text-cyan-100 text-sm sm:text-base nikud-text">
+                        מַסָּע עֲתִידָנִי קָסוּם בְּסֵפֶר בְּרֵאשִׁית לְתַלְמִידֵי כִּתָּה ב' ✨
+                    </p>
+                </div>
+            </div>
+
+            <!-- ניקוד וכוכבים של התלמיד -->
+            <div class="flex items-center gap-2 sm:gap-3 flex-wrap justify-center">
+                <button onclick="goToSlide(9)" class="pixel-btn bg-gradient-to-b from-amber-300 to-amber-500 text-amber-950 font-bold px-3.5 py-2 rounded-2xl flex items-center gap-1.5 text-base sm:text-lg">
+                    <span>📖</span>
+                    <span class="nikud-text">מִלּוֹן בְּרֵאשִׁית</span>
+                </button>
+                <button onclick="speakCurrentSlide()" id="ttsBtn" class="pixel-btn bg-gradient-to-b from-cyan-300 to-sky-500 text-sky-950 font-bold px-4 py-2 rounded-2xl flex items-center gap-2 text-base sm:text-lg">
+                    <span>🔊</span>
+                    <span class="nikud-text">הַקְרֵא לִי</span>
+                </button>
+                <div class="bg-indigo-900/90 border-2 border-cyan-400/70 px-4 py-2 rounded-2xl flex items-center gap-2 text-amber-200 font-bold text-lg shadow-[inset_0_2px_8px_rgba(0,0,0,0.6)]">
+                    <span>⭐</span>
+                    <span class="nikud-text">כּוֹכָבִים:</span>
+                    <span id="starCount" class="text-cyan-300 text-xl">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- סרגל כפתורי הימים, המילון והמשחק -->
+        <nav id="daysNav" class="grid grid-cols-2 sm:grid-cols-5 md:grid-cols-10 gap-2 mt-3">
+            <!-- מיוצר דינמית ב-JS -->
+        </nav>
+    </header>
+
+    <main class="max-w-6xl w-full mx-auto flex-grow flex items-center justify-center my-1 relative z-10">
+        <div id="mainFrame" class="disney-frame w-full p-4 sm:p-6 md:p-7">
+            
+            <!-- תצוגת למידה רגילה (פתיחה + 7 ימים) -->
+            <div id="learningModule" class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                
+                <!-- עמודת מקרן ההולוגרמה התלת-ממדי + דיסני פיקסל ארט (7 עמודות) -->
+                <div class="lg:col-span-7 flex flex-col items-center">
+                    <div id="holoStageContainer" class="relative w-full aspect-[4/3] bg-slate-950 rounded-3xl border-4 border-cyan-400/80 shadow-[0_20px_50px_rgba(0,0,0,0.75),0_0_30px_rgba(0,242,254,0.35)] overflow-hidden group">
+                        
+                        <!-- שכבה 1: רקע דיסני פיקסל ארט מונפש -->
+                        <canvas id="pixelArtCanvas" width="160" height="120" class="pixel-canvas absolute inset-0 w-full h-full object-cover opacity-55 transition-opacity duration-500"></canvas>
+                        
+                        <!-- שכבה 2: אלומת אור הולוגרפית (Hologram Light Cone) -->
+                        <div id="holoBeamCone" class="holo-beam-cone"></div>
+                        <div class="holo-emitter-ring"></div>
+                        <div class="holo-scan-overlay"></div>
+
+                        <!-- שכבה 3: קנבס Three.js להולוגרמה תלת-ממדית אינטראקטיבית -->
+                        <div id="threeHoloMount" class="absolute inset-0 w-full h-full z-20 cursor-grab active:cursor-grabbing"></div>
+
+                        <!-- תווית היום על גבי ההולוגרמה -->
+                        <div id="canvasBadge" class="absolute top-3 right-3 z-30 bg-gradient-to-r from-amber-300 to-amber-400 text-amber-950 border-2 border-white font-bold px-3.5 py-1 rounded-2xl text-base sm:text-lg shadow-lg nikud-text">
+                            פְּתִיחָה
+                        </div>
+
+                        <!-- תווית הסבר על ההולוגרמה התלת-ממדית -->
+                        <div id="holoLabelBadge" class="absolute top-3 left-3 z-30 bg-cyan-950/85 text-cyan-200 border border-cyan-400/80 font-bold px-3 py-1 rounded-2xl text-xs sm:text-sm shadow-lg flex items-center gap-1.5 backdrop-blur-md nikud-text">
+                            <span class="inline-block w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping"></span>
+                            <span id="holoModelTitle">הוֹלוֹגְרָמַת כַּדּוּר הָאָרֶץ 3D</span>
+                        </div>
+
+                        <!-- כפתורי שליטה בתחתית ההולוגרמה -->
+                        <div class="absolute bottom-3 left-3 right-3 z-30 flex items-center justify-between gap-2 pointer-events-none">
+                            <button onclick="triggerCanvasMagic()" id="magicActionBtn" class="pointer-events-auto pixel-btn bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 text-white font-bold px-4 py-1.5 rounded-2xl text-sm sm:text-base flex items-center gap-1.5">
+                                <span>⚡</span>
+                                <span id="magicBtnText" class="nikud-text">הַפְעֵל אֲלוּמַת קֶסֶם!</span>
+                            </button>
+
+                            <button onclick="toggleHoloMode()" id="toggleViewBtn" class="pointer-events-auto pixel-btn bg-amber-300/95 text-amber-950 font-bold px-3 py-1.5 rounded-2xl text-xs sm:text-sm flex items-center gap-1 nikud-text">
+                                <span>🔮</span>
+                                <span id="toggleViewText">הַצֵּג פִּיקְסֶל מָלֵא</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <p id="canvasHint" class="text-indigo-950 font-semibold text-sm sm:text-base mt-2.5 text-center nikud-text bg-cyan-100/80 border border-cyan-300 px-4 py-1 rounded-full shadow-sm">
+                        🖐️ סוֹבְבוּ אֶת הַהוֹלוֹגְרָמָה הַתְּלַת-מְמַדִּית עִם הָעַכְבָּר אוֹ הָאֶצְבַּע!
+                    </p>
+                </div>
+
+                <!-- עמודת תוכן, סיפור ושאלה (5 עמודות) -->
+                <div class="lg:col-span-5 flex flex-col justify-between space-y-3.5">
+                    
+                    <!-- כותרת היום ומה נברא -->
+                    <div class="liquid-card p-4">
+                        <div class="flex items-center justify-between mb-1">
+                            <span id="daySubTitle" class="text-cyan-800 font-bold text-base sm:text-lg nikud-text">בְּרוּכִים הַבָּאִים</span>
+                            <span id="dayEmoji" class="text-3xl drop-shadow">✨</span>
+                        </div>
+                        <h2 id="dayTitle" class="text-2xl sm:text-3xl md:text-4xl font-bold text-indigo-950 nikud-text">
+                            סִפּוּר בְּרִיאַת הָעוֹלָם
+                        </h2>
+                    </div>
+
+                    <!-- פסוק מהתורה במגילה -->
+                    <div class="torah-scroll p-3 sm:p-4 text-center">
+                        <div class="text-xs sm:text-sm font-bold text-amber-800 mb-1 nikud-text">📖 מִתּוֹךְ סֵפֶר בְּרֵאשִׁית:</div>
+                        <p id="dayVerse" class="text-lg sm:text-xl md:text-2xl font-bold text-amber-950 nikud-text">
+                            "בְּרֵאשִׁית בָּרָא אֱלֹהִים אֵת הַשָּׁמַיִם וְאֵת הָאָרֶץ"
+                        </p>
+                    </div>
+
+                    <!-- הסבר בשפה פשוטה לכיתה ב' -->
+                    <div class="liquid-card p-4">
+                        <p id="dayStory" class="text-lg sm:text-xl text-slate-800 font-medium nikud-text">
+                            לִפְנֵי הֲמוֹן שָׁנִים הָעוֹלָם הָיָה חָשׁוּךְ וּמְבֻלְגָּן. בּוֹאוּ נְגַלֶּה יַחַד אֵיךְ אֱלֹהִים בָּרָא אֶת הָעוֹלָם הַמַּקְסִים שֶׁלָּנוּ בְּשִׁבְעָה יָמִים!
+                        </p>
+                        
+                        <!-- תגיות מה נברא היום -->
+                        <div id="createdItemsContainer" class="mt-3 pt-3 border-t border-cyan-200/60 flex flex-wrap gap-2">
+                            <!-- מיוצר דינמית -->
+                        </div>
+
+                        <!-- מילים קשות של אותו יום (לחיצה פותחת הסבר מהיר) -->
+                        <div class="mt-3 pt-2.5 border-t border-amber-300/70">
+                            <div class="text-xs sm:text-sm font-bold text-indigo-900 mb-1.5 flex items-center justify-between nikud-text">
+                                <span>🔍 מִלִּים חֲדָשׁוֹת בַּיּוֹם הַזֶּה (לִחֲצוּ לְפֵרוּשׁ):</span>
+                                <button onclick="goToSlide(9)" class="text-cyan-700 hover:text-cyan-900 underline text-xs">לְכָל הַמִּלּוֹן ⬅️</button>
+                            </div>
+                            <div id="dayWordsContainer" class="flex flex-wrap gap-1.5">
+                                <!-- מיוצר דינמית -->
+                            </div>
+                            <div id="quickWordPopup" class="hidden mt-2 p-2.5 rounded-2xl bg-gradient-to-r from-amber-100 to-cyan-50 border-2 border-amber-400 text-slate-800 text-sm sm:text-base shadow-inner nikud-text"></div>
+                        </div>
+                    </div>
+
+                    <!-- חידה קצרה לתלמיד בתוך השקופית -->
+                    <div id="miniQuizBox" class="liquid-card bg-gradient-to-br from-indigo-50/90 to-cyan-100/90 border-2 border-cyan-300 p-4">
+                        <div class="flex items-center gap-2 font-bold text-indigo-950 text-base sm:text-lg mb-2 nikud-text">
+                            <span>🤔</span>
+                            <span id="quizQuestion">שְׁאֵלַת חֲשִׁיבָה:</span>
+                        </div>
+                        <div id="quizOptions" class="grid grid-cols-1 gap-2">
+                            <!-- אפשרויות תשובה דינמיות -->
+                        </div>
+                        <div id="quizFeedback" class="hidden mt-2 p-2 rounded-xl text-center font-bold text-base nikud-text"></div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- תצוגת משחק סיכום (מודול 9) -->
+            <div id="gameModule" class="hidden flex-col items-center justify-center py-2">
+                <div class="text-center max-w-2xl mx-auto mb-6">
+                    <span class="bg-amber-300 text-amber-950 font-bold px-4 py-1 rounded-full text-base border-2 border-amber-800 nikud-text">
+                        🏆 מִשְׂחַק אֲלוּפֵי הַבְּרִיאָה
+                    </span>
+                    <h2 class="text-2xl sm:text-4xl font-bold text-amber-950 mt-2 nikud-text">
+                        בְּאֵיזֶה יוֹם זֶה נִבְרָא?
+                    </h2>
+                    <p class="text-lg text-slate-700 mt-1 nikud-text">
+                        הִסְתַּכְּלוּ עַל הַפְּרִיט שֶׁבַּכַּרְטִיס וּלְחֲצוּ עַל הַיּוֹם הַנָּכוֹן שֶׁבּוֹ אֱלֹהִים בָּרָא אוֹתוֹ!
+                    </p>
+                </div>
+
+                <!-- כרטיס הפריט הנוכחי במשחק -->
+                <div id="gameCard" class="bg-gradient-to-b from-amber-50 to-amber-100 border-4 border-amber-700 rounded-3xl p-6 sm:p-8 shadow-xl flex flex-col items-center max-w-md w-full mb-6 transform transition-all">
+                    <div id="gameItemEmoji" class="text-6xl sm:text-7xl mb-3 animate-bounce">☀️</div>
+                    <h3 id="gameItemName" class="text-2xl sm:text-3xl font-bold text-amber-950 text-center nikud-text">
+                        הַשֶּׁמֶשׁ, הַיָּרֵחַ וְהַכּוֹכָבִים
+                    </h3>
+                    <div id="gameProgressText" class="text-sm font-bold text-amber-700 mt-2 nikud-text">
+                        שְׁאֵלָה 1 מִתּוֹךְ 7
+                    </div>
+                </div>
+
+                <!-- כפתורי 7 הימים לבחירה במשחק -->
+                <div id="gameDaysGrid" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3 w-full max-w-5xl">
+                    <!-- מיוצר דינמית -->
+                </div>
+
+                <!-- משוב משחק -->
+                <div id="gameMessage" class="mt-5 min-h-[3rem] flex items-center justify-center">
+                    <p class="text-xl font-bold text-indigo-900 nikud-text">בַּחֲרוּ יוֹם כְּדֵי לְהַתְחִיל!</p>
+                </div>
+            </div>
+
+            <!-- תצוגת מילון המילים הקשות בסיפורי הבריאה (מודול 10) -->
+            <div id="dictionaryModule" class="hidden flex-col py-1">
+                <!-- כותרת המילון וחיפוש -->
+                <div class="flex flex-col md:flex-row items-center justify-between gap-4 mb-5 bg-gradient-to-r from-indigo-950 via-sky-950 to-indigo-950 p-4 sm:p-5 rounded-3xl border-2 border-cyan-400/70 shadow-xl text-white">
+                    <div class="flex items-center gap-3.5">
+                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-300 to-amber-500 text-amber-950 flex items-center justify-center text-3xl shadow-[0_0_25px_rgba(255,215,0,0.6)] border-2 border-white">
+                            📘
+                        </div>
+                        <div>
+                            <h2 class="text-2xl sm:text-3xl font-bold text-amber-300 nikud-text">
+                                מִלּוֹן הַמִּלִּים הַקָּשׁוֹת שֶׁל בְּרֵאשִׁית
+                            </h2>
+                            <p class="text-cyan-100 text-sm sm:text-base nikud-text">
+                                לִחֲצוּ עַל כָּל מִלָּה כְּדֵי לִשְׁמֹעַ אוֹתָהּ וּלְגַלּוֹת מָה הִיא אוֹמֶרֶת בְּשָׂפָה פְּשׁוּטָה! ✨
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- תיבת חיפוש מילה -->
+                    <div class="w-full md:w-72 relative">
+                        <input id="dictSearchInput" type="text" oninput="filterDictionary()" placeholder="חַפְּשׂוּ מִלָּה בַּמִּלּוֹן..." class="w-full px-4 py-2.5 pr-10 rounded-2xl bg-white/95 text-slate-900 font-bold border-2 border-cyan-300 focus:outline-none focus:ring-4 focus:ring-cyan-400 text-base nikud-text placeholder:text-slate-400">
+                        <span class="absolute right-3 top-2.5 text-xl pointer-events-none">🔎</span>
+                    </div>
+                </div>
+
+                <!-- סינון מילים לפי ימי הבריאה -->
+                <div id="dictFilterBar" class="flex flex-wrap items-center justify-center gap-2 mb-5">
+                    <!-- כפתורי סינון דינמיים -->
+                </div>
+
+                <!-- רשת כרטיסי המילים התלת-ממדיים הנוזליים -->
+                <div id="dictionaryGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[54vh] overflow-y-auto p-2 pr-1">
+                    <!-- מיוצר דינמית ב-JS -->
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <footer class="max-w-6xl w-full mx-auto mt-3">
+        <div class="flex items-center justify-between bg-amber-950/80 border-4 border-amber-400 rounded-2xl p-3 shadow-lg backdrop-blur-md">
+            <button onclick="prevSlide()" id="prevBtn" class="pixel-btn bg-amber-400 hover:bg-amber-300 text-amber-950 font-bold px-5 py-2.5 rounded-xl flex items-center gap-2 text-lg sm:text-xl disabled:opacity-40">
+                <span>➡️</span>
+                <span class="nikud-text">הַקּוֹדֵם</span>
+            </button>
+
+            <div class="hidden sm:flex items-center gap-2" id="progressDots">
+                <!-- נקודות התקדמות -->
+            </div>
+
+            <button onclick="nextSlide()" id="nextBtn" class="pixel-btn bg-emerald-400 hover:bg-emerald-300 text-emerald-950 font-bold px-6 py-2.5 rounded-xl flex items-center gap-2 text-lg sm:text-xl">
+                <span class="nikud-text">הַבָּא</span>
+                <span>⬅️</span>
+            </button>
+        </div>
+    </footer>
+
+    <script>
+        // מאגר כל המודולים של המצגת - מנוקד בניקוד תקני מלא ומותאם לכיתה ב' + תיאורי הולוגרמות 3D
+        const slidesData = [
+            {
+                id: 0,
+                navLabel: "פְּתִיחָה",
+                badge: "הַתְחָלָה קְסוּמָה",
+                holoTitle: "הוֹלוֹגְרָמָה: כַּדּוּר הָאָרֶץ וְטַבְּעוֹת הַבְּרִיאָה",
+                subTitle: "פָּרָשַׁת בְּרֵאשִׁית",
+                title: "אֵיךְ נִבְרָא הָעוֹלָם?",
+                emoji: "🌍",
+                verse: "בְּרֵאשִׁית בָּרָא אֱלֹהִים אֵת הַשָּׁמַיִם וְאֵת הָאָרֶץ",
+                story: "לִפְנֵי הֲמוֹן שָׁנִים, לֹא הָיוּ עֵצִים, לֹא הָיוּ חַיּוֹת וְלֹא הָיוּ אֲנָשִׁים. בָּעוֹלָם הָיָה 'תֹהוּ וָבֹהוּ' – בָּלָגָן אֶחָד גָּדוֹל וְחֹשֶׁךְ מֻחְלָט! אֱלֹהִים הֶחְלִיט לִבְרוֹא עוֹלָם יָפֶה וּמְסֻדָּר בְּשִׁשָּׁה יָמִים, וּבַיּוֹם הַשְּׁבִיעִי – לָנוּחַ.",
+                createdItems: ["✨ סֵדֶר בָּעוֹלָם", "📖 סִפּוּר הַבְּרִיאָה"],
+                magicText: "שַׁגֵּר גַּל הוֹלוֹגְרָמָה!",
+                question: "מָה הָיָה בָּעוֹלָם לִפְנֵי שֶׁאֱלֹהִים הִתְחִיל לִבְרוֹא אוֹתוֹ?",
+                options: [
+                    { text: "תֹהוּ וָבֹהוּ וְחֹשֶׁךְ גָּדוֹל", correct: true },
+                    { text: "הֲמוֹן בִּנְיָנִים וּמְכוֹנִיּוֹת", correct: false },
+                    { text: "גַּן שַׁעֲשׁוּעִים עֲנָק", correct: false }
+                ]
+            },
+            {
+                id: 1,
+                navLabel: "יוֹם א'",
+                badge: "הַיּוֹם הָרִאשׁוֹן",
+                holoTitle: "הוֹלוֹגְרָמָה: לַהֶבֶת הָאוֹר הָרִאשׁוֹן (לְלֹא שֶׁמֶשׁ)",
+                subTitle: "וַיְהִי עֶרֶב וַיְהִי בֹקֶר יוֹם אֶחָד",
+                title: "אוֹר וָחֹשֶׁךְ",
+                emoji: "🕯️",
+                verse: "וַיֹּאמֶר אֱלֹהִים יְהִי אוֹר וַיְהִי אוֹר",
+                story: "בַּיּוֹם הָרִאשׁוֹן הָיָה חֹשֶׁךְ מֻחְלָט, מַמָּשׁ כְּמוֹ בְּהַפְסָקַת חַשְׁמַל! עוד לִפְנֵי שֶׁהָיְתָה שֶׁמֶשׁ, אֱלֹהִים בָּרָא אֶת הָאוֹר הָרִאשׁוֹן כְּמוֹ לַהֶבֶת נֵר זוֹהֶרֶת בַּחֹשֶׁךְ. לָאוֹר הוּא קָרָא 'יוֹם', וְלַחֹשֶׁךְ הוּא קָרָא 'לַיְלָה'!",
+                createdItems: ["🕯️ לַהֶבֶת הָאוֹר (יוֹם)", "🌑 הַחֹשֶׁךְ (לַיְלָה)"],
+                magicText: "הַעֲצֵם אֶת לַהֶבֶת הָאוֹר!",
+                question: "אֵיךְ אֱלֹהִים קָרָא לָאוֹר וְאֵיךְ הוּא קָרָא לַחֹשֶׁךְ?",
+                options: [
+                    { text: "לָאוֹר קָרָא 'יוֹם' וְלַחֹשֶׁךְ קָרָא 'לַיְלָה'", correct: true },
+                    { text: "לָאוֹר קָרָא 'קַיִץ' וְלַחֹשֶׁךְ קָרָא 'חֹרֶף'", correct: false },
+                    { text: "לָאוֹר קָרָא 'שֶׁמֶשׁ' וְלַחֹשֶׁךְ קָרָא 'עָנָן'", correct: false }
+                ]
+            },
+            {
+                id: 2,
+                navLabel: "יוֹם ב'",
+                badge: "הַיּוֹם הַשֵּׁנִי",
+                holoTitle: "הוֹלוֹגְרָמָה: כִּפַּת הָרָקִיעַ וְטִפּוֹת הַגֶּשֶׁם",
+                subTitle: "וַיְהִי עֶרֶב וַיְהִי בֹקֶר יוֹם שֵׁנִי",
+                title: "הָרָקִיעַ (הַשָּׁמַיִם)",
+                emoji: "☁️",
+                verse: "וַיַּעַשׂ אֱלֹהִים אֶת הָרָקִיעַ וַיַּבְדֵּל בֵּין הַמַּיִם",
+                story: "כָּל הָעוֹלָם הָיָה מָלֵא בְּמַיִם! בַּיּוֹם הַשֵּׁנִי אֱלֹהִים עָשָׂה הַפְרָדָה: הוּא יָצַר אֶת הָרָקִיעַ (הַשָּׁמַיִם הַכְּחֻלִּים). הַשָּׁמַיִם הִפְרִידוּ בֵּין הַמַּיִם שֶׁלְּמַטָּה לְבֵין הָעֲנָנִים שֶׁלְּמַעְלָה שֶׁמּוֹרִידִים לָנוּ גֶּשֶׁם מְרַעֲנֵן.",
+                createdItems: ["🌤️ הָרָקִיעַ (הַשָּׁמַיִם)", "🌧️ עֲנָנִים בַּשָּׁמַיִם", "🌊 מַיִם לְמַטָּה"],
+                magicText: "הוֹרֵד מְטַר גֶּשֶׁם 3D!",
+                question: "מָה הִפְרִיד הָרָקִיעַ (הַשָּׁמַיִם) בַּיּוֹם הַשֵּׁנִי?",
+                options: [
+                    { text: "בֵּין הַמַּיִם שֶׁלְּמַעְלָה (בָּעֲנָנִים) לַמַּיִם שֶׁלְּמַטָּה", correct: true },
+                    { text: "בֵּין הַדָּגִים לְבֵין הַצִּפּוֹרִים", correct: false },
+                    { text: "בֵּין הָעֵצִים לְבֵין הַפְּרָחִים", correct: false }
+                ]
+            },
+            {
+                id: 3,
+                navLabel: "יוֹם ג'",
+                badge: "הַיּוֹם הַשְּׁלִישִׁי",
+                holoTitle: "הוֹלוֹגְרָמָה: שׁוּנִית הַיָּם, הַיַּבָּשָׁה וַעֲצֵי הַפְּרִי",
+                subTitle: "וַיְהִי עֶרֶב וַיְהִי בֹקֶר יוֹם שְׁלִישִׁי",
+                title: "יַבָּשָׁה, שׁוּנִית יָם וּצְמָחִים",
+                emoji: "🌳",
+                verse: "וַתּוֹצֵא הָאָרֶץ דֶּשֶׁא עֵשֶׂב מַזְרִיעַ זֶרַע וְעֵץ עֹשֶׂה פְּרִי",
+                story: "בַּיּוֹם הַשְּׁלִישִׁי אֱלֹהִים אָסַף אֶת הַמַּיִם לַיָּם עִם שׁוּנִיּוֹת מַדְהִימוֹת, וּפִתְאוֹם הוֹפִיעָה הַיַּבָּשָׁה! מִיָּד צָמְחוּ עָלֶיהָ דֶּשֶׁא יָרֹק, פְּרָחִים צִבְעוֹנִיִּים כְּמוֹ שֵׁן-הָאֲרִי, וְעֵצִים עִם פֵּרוֹת מְתוּקִים.",
+                createdItems: ["🪸 שׁוּנִית וְיַבָּשָׁה", "🌷 פְּרָחִים וְדֶשֶׁא", "🍎 עֲצֵי פְּרִי"],
+                magicText: "הַפְרַח שׁוּנִית וּפְרָחִים!",
+                question: "אֵילוּ שְׁנֵי דְּבָרִים חֲשׁוּבִים קָרוּ בַּיּוֹם הַשְּׁלִישִׁי?",
+                options: [
+                    { text: "הוֹפִיעָה הַיַּבָּשָׁה וְצָמְחוּ עָלֶיהָ צְמָחִים וְעֵצִים", correct: true },
+                    { text: "נִבְרְאוּ הַשֶּׁמֶשׁ וְהַיָּרֵחַ בַּשָּׁמַיִם", correct: false },
+                    { text: "נִבְרְאוּ הָאֲרָיוֹת וְהַכְּלָבִים", correct: false }
+                ]
+            },
+            {
+                id: 4,
+                navLabel: "יוֹם ד'",
+                badge: "הַיּוֹם הָרְבִיעִי",
+                holoTitle: "הוֹלוֹגְרָמָה: מַעֲרֶכֶת הַשֶּׁמֶשׁ וְכוֹכְבֵי הַלֶּכֶת בְּמַסְלוּלָם",
+                subTitle: "וַיְהִי עֶרֶב וַיְהִי בֹקֶר יוֹם רְבִיעִי",
+                title: "הַשֶּׁמֶשׁ, הַיָּרֵחַ וּמַעֲרֶכֶת הַשֶּׁמֶשׁ",
+                emoji: "☀️",
+                verse: "וַיַּעַשׂ אֱלֹהִים אֶת שְׁנֵי הַמְּאֹרֹת הַגְּדֹלִים... וְאֵת הַכּוֹכָבִים",
+                story: "בַּיּוֹם הָרְבִיעִי אֱלֹהִים תָּלָה בֶּחָלָל אֶת מַעֲרֶכֶת הַשֶּׁמֶשׁ! הַשֶּׁמֶשׁ הָעֲנָקִית בַּמֶּרְכָּז מְאִירָה בַּיּוֹם, וּסְבִיבָהּ חָגִים כּוֹכְבֵי הַלֶּכֶת, כַּדּוּר הָאָרֶץ וְהַיָּרֵחַ שֶׁזּוֹהֵר בַּלַּיְלָה עִם הַכּוֹכָבִים!",
+                createdItems: ["☀️ הַשֶּׁמֶשׁ בַּמֶּרְכָּז", "🪐 כּוֹכְבֵי הַלֶּכֶת בְּמַסְלוּל", "🌙 הַיָּרֵחַ וְהַכּוֹכָבִים"],
+                magicText: "הָאֵץ אֶת מַסְלוּל הַכּוֹכָבִים!",
+                question: "מָה הֵם שְׁנֵי הַמְּאוֹרוֹת הַגְּדוֹלִים שֶׁבַּשָּׁמַיִם?",
+                options: [
+                    { text: "הַשֶּׁמֶשׁ וְהַיָּרֵחַ (יַחַד עִם הַכּוֹכָבִים)", correct: true },
+                    { text: "פָּנָס רְחוֹב וּמְנוֹרַת לַיְלָה", correct: false },
+                    { text: "הַקֶּשֶׁת בֶּעָנָן וְהַבָּרָק", correct: false }
+                ]
+            },
+            {
+                id: 5,
+                navLabel: "יוֹם ה'",
+                badge: "הַיּוֹם הַחֲמִישִׁי",
+                holoTitle: "הוֹלוֹגְרָמָה: דּוֹלְפִינִים, דָּגִים וְעוֹפוֹת בִּתְנוּעָה",
+                subTitle: "וַיְהִי עֶרֶב וַיְהִי בֹקֶר יוֹם חֲמִישִׁי",
+                title: "דָּגִים בַּיָּם וְעוֹפוֹת בַּשָּׁמַיִם",
+                emoji: "🐬",
+                verse: "יִשְׁרְצוּ הַמַּיִם שֶׁרֶץ נֶפֶשׁ חַיָּה וְעוֹף יְעוֹפֵף עַל הָאָרֶץ",
+                story: "בַּיּוֹם הַחֲמִישִׁי הָעוֹלָם הִתְמַלֵּא בְּחַיִּים וּבִתְנוּעָה! בְּתוֹךְ הַיָּם הִתְחִילוּ לִשְׂחוֹת דָּגִים צִבְעוֹנִיִּים, דּוֹלְפִינִים וְלִוְיְתָנִים גְּדוֹלִים. וּלְמַעְלָה בַּשָּׁמַיִם הִתְחִילוּ לָעוּף צִפּוֹרִים יָפוֹת שֶׁשָּׁרוֹת שִׁירִים בַּיַּעַר!",
+                createdItems: ["🐠 דָּגִים וְחַיּוֹת יָם", "🐋 דּוֹלְפִינִים וְתַנִּינִים", "🐦 צִפּוֹרִים וְעוֹפוֹת"],
+                magicText: "הַקְפֵּץ לַהֲקַת דָּגִים 3D!",
+                question: "אֵילוּ בַּעֲלֵי חַיִּים נִבְרְאוּ בַּיּוֹם הַחֲמִישִׁי?",
+                options: [
+                    { text: "חַיּוֹת הַמַּיִם (דָּגִים) וְעוֹפוֹת הַשָּׁמַיִם (צִפּוֹרִים)", correct: true },
+                    { text: "רַק חַיּוֹת יַבָּשָׁה כְּמוֹ פָּרָה וְכֶלֶב", correct: false },
+                    { text: "רַק פַּרְפָּרִים וּדְבוֹרִים", correct: false }
+                ]
+            },
+            {
+                id: 6,
+                navLabel: "יוֹם ו'",
+                badge: "הַיּוֹם הַשִּׁשִּׁי",
+                holoTitle: "הוֹלוֹגְרָמָה: הָאָדָם וְחַיּוֹת הַיַּבָּשָׁה בְּגַן עֵדֶן",
+                subTitle: "וַיְהִי עֶרֶב וַיְהִי בֹקֶר יוֹם הַשִּׁשִּׁי",
+                title: "חַיּוֹת הַיַּבָּשָׁה וְהָאָדָם",
+                emoji: "🦁",
+                verse: "וַיִּבְרָא אֱלֹהִים אֶת הָאָדָם בְּצַלְמוֹ... וַיַּרְא אֱלֹהִים וְהִנֵּה טוֹב מְאֹד",
+                story: "בַּיּוֹם הַשִּׁשִּׁי אֱלֹהִים בָּרָא אֶת כָּל חַיּוֹת הַיַּבָּשָׁה: כְּלָבִים, חֲתוּלִים, פָּרוֹת, צַבִּים וַאֲרָיוֹת. וּבַסּוֹף – אֱלֹהִים בָּרָא אֶת הָאָדָם הָרִאשׁוֹן וְאֶת חַוָּה! הָאָדָם קָרָא שֵׁמוֹת לַחַיּוֹת וְקִבֵּל תַּפְקִיד חָשׁוּב: לִשְׁמֹר עַל הָעוֹלָם הַמֻּשְׁלָם!",
+                createdItems: ["🐶 חַיּוֹת הַיַּבָּשָׁה", "👫 אָדָם וְחַוָּה", "💚 שְׁמִירָה עַל הָעוֹלָם"],
+                magicText: "הָאֵר אֶת לֵב גַּן עֵדֶן!",
+                question: "מָה הַתַּפְקִיד הַמְּיֻחָד שֶׁקִּבֵּל הָאָדָם בְּגַן עֵדֶן?",
+                options: [
+                    { text: "לָתֵת שֵׁמוֹת לַחַיּוֹת וְלִשְׁמֹר עַל הָעוֹלָם הַיָּפֶה", correct: true },
+                    { text: "לִישׁוֹן כָּל הַיּוֹם מִתַּחַת לָעֵץ", correct: false },
+                    { text: "לִצְבֹּעַ אֶת הַשָּׁמַיִם בְּכָחֹל", correct: false }
+                ]
+            },
+            {
+                id: 7,
+                navLabel: "שַׁבָּת 🕯️",
+                badge: "הַיּוֹם הַשְּׁבִיעִי",
+                holoTitle: "הוֹלוֹגְרָמָה: נֵרוֹת שַׁבָּת וְכֶתֶר קְדֻשַּׁת הַשַּׁבָּת",
+                subTitle: "וַיְבָרֶךְ אֱלֹהִים אֶת יוֹם הַשְּׁבִיעִי וַיְקַדֵּשׁ אֹתוֹ",
+                title: "יוֹם הַשַּׁבָּת - יוֹם מְנוּחָה",
+                emoji: "🕯️",
+                verse: "וַיִּשְׁבֹּת בַּיּוֹם הַשְּׁבִיעִי מִכָּל מְלַאכְתּוֹ אֲשֶׁר עָשָׂה",
+                story: "אַחֲרֵי שִׁשָּׁה יָמִים שֶׁל יְצִירָה מֻפְלָאָה, הָעוֹלָם הָיָה מוּכָן וּמוּשְׁלָם! בַּיּוֹם הַשְּׁבִיעִי אֱלֹהִים שָׁבַת – כְּלוֹמַר, הוּא נָח מִכָּל הַמְּלָאכָה. לָכֵן אֲנַחְנוּ קוֹרְאִים לַיּוֹם הַזֶּה 'שַׁבָּת', מַדְלִיקִים נֵרוֹת, אוֹכְלִים חַלָּה מְתוּקָה וְנָחִים עִם הַמִּשְׁפָּחָה!",
+                createdItems: ["🕯️ נֵרוֹת שַׁבָּת", "🍞 חַלָּה מְתוּקָה", "😌 מְנוּחָה וּקְדֻשָּׁה"],
+                magicText: "הַדְלֵק אוֹר שַׁבָּת 3D!",
+                question: "לָמָּה קוֹרְאִים לַיּוֹם הַשְּׁבִיעִי 'שַׁבָּת'?",
+                options: [
+                    { text: "כִּי בּוֹ אֱלֹהִים שָׁבַת (נָח) מִכָּל מְלֶאכֶת הַבְּרִיאָה", correct: true },
+                    { text: "כִּי בּוֹ נִבְרְאוּ הַשּׁוֹשַׁנִּים וְהַשְּׁקֵדִיּוֹת", correct: false },
+                    { text: "כִּי כּוּלָּם יוֹשְׁבִים עַל כִּסֵּא", correct: false }
+                ]
+            }
+        ];
+
+        // מאגר פריטים למשחק הסיכום
+        const gameQuestions = [
+            { emoji: "💡", name: "הָאוֹר וְהַחֹשֶׁךְ (יוֹם וָלַיְלָה)", day: 1 },
+            { emoji: "☁️", name: "הָרָקִיעַ (הַשָּׁמַיִם שֶׁמַּפְרִידִים בֵּין הַמַּיִם)", day: 2 },
+            { emoji: "🌳", name: "הַיַּבָּשָׁה, הַדֶּשֶׁא, הַפְּרָחִים וַעֲצֵי הַפְּרִי", day: 3 },
+            { emoji: "☀️", name: "הַשֶּׁמֶשׁ, הַיָּרֵחַ וְהַכּוֹכָבִים בַּשָּׁמַיִם", day: 4 },
+            { emoji: "🐬", name: "הַדָּגִים בַּיָּם וְהַצִּפּוֹרִים בַּשָּׁמַיִם", day: 5 },
+            { emoji: "🦁", name: "חַיּוֹת הַיַּבָּשָׁה וְהָאָדָם וְחַוָּה", day: 6 },
+            { emoji: "🕯️", name: "יוֹם הַשַּׁבָּת – יוֹם מְנוּחָה וּקְדֻשָּׁה", day: 7 }
+        ];
+
+        // מאגר מילון המילים הקשות בסיפורי הבריאה - מנוקד במלואו ומותאם לתלמידי כיתה ב'
+        const dictionaryWords = [
+            {
+                word: "בְּרֵאשִׁית",
+                day: 0,
+                dayLabel: "פְּתִיחָה",
+                emoji: "📖",
+                simpleMeaning: "בַּהַתְחָלָה-בַּהַתְחָלָה, לִפְנֵי הַכֹּל!",
+                kidExample: "כְּשֶׁפּוֹתְחִים מַחְבֶּרֶת חֲדָשָׁה בָּעַמּוּד הָרִאשׁוֹן – זוֹ הָרֵאשִׁית שֶׁלָּהּ.",
+                verseQuote: "\"בְּרֵאשִׁית בָּרָא אֱלֹהִים אֵת הַשָּׁמַיִם וְאֵת הָאָרֶץ\""
+            },
+            {
+                word: "בָּרָא",
+                day: 0,
+                dayLabel: "פְּתִיחָה",
+                emoji: "✨",
+                simpleMeaning: "יָצַר וְהִמְצִיא דָּבָר חָדָשׁ ל לגַמְרֵי שֶׁלֹּא הָיָה קֹדֶם.",
+                kidExample: "אֱלֹהִים בָּרָא אֶת הָעוֹלָם מֵאֶפֶס, כְּמוֹ קֶסֶם מֻפְלָא!",
+                verseQuote: "\"בְּרֵאשִׁית בָּרָא אֱלֹהִים\""
+            },
+            {
+                word: "תֹהוּ וָבֹהוּ",
+                day: 0,
+                dayLabel: "פְּתִיחָה וְיוֹם א'",
+                emoji: "🌀",
+                simpleMeaning: "בָּלָגָן אֶחָד גָּדוֹל, עִרְבּוּבְיָה וְרֵיקָנוּת לְלֹא סֵדֶר.",
+                kidExample: "כְּשֶׁכָּל הַצַּעֲצוּעִים מְפֻזָּרִים עַל הָרִצְפָּה בַּחֶדֶר – אוֹמְרִים שֶׁיֵּשׁ שָׁם תֹּהוּ וָבֹהוּ!",
+                verseQuote: "\"וְהָאָרֶץ הָיְתָה תֹהוּ וָבֹהוּ\""
+            },
+            {
+                word: "תְּהוֹם",
+                day: 1,
+                dayLabel: "יוֹם א'",
+                emoji: "🌊",
+                simpleMeaning: "מַיִם עֲמֻקִּים-עֲמֻקִּים מְאֹד שֶׁכִּסּוּ אֶת הָעוֹלָם בַּהַתְחָלָה.",
+                kidExample: "מָקוֹם עָמֹק מְאֹד בַּיָּם שֶׁקָּשֶׁה לִרְאוֹת אֶת הַתַּחְתִּית שֶׁלּוֹ.",
+                verseQuote: "\"וְחֹשֶׁךְ עַל פְּנֵי תְהוֹם\""
+            },
+            {
+                word: "וַיַּבְדֵּל",
+                day: 1,
+                dayLabel: "יוֹם א' וְיוֹם ב'",
+                emoji: "⚖️",
+                simpleMeaning: "הִפְרִיד וְעָשָׂה הֶבְדֵּל בֵּין שְׁנֵי דְּבָרִים שׁוֹנִים.",
+                kidExample: "אֱלֹהִים הִפְרִיד בֵּין הָאוֹר לַחֹשֶׁךְ כְּדֵי שֶׁלֹּא יִתְעַרְבְּבוּ יַחַד.",
+                verseQuote: "\"וַיַּבְדֵּל אֱלֹהִים בֵּין הָאוֹר וּבֵין הַחֹשֶׁךְ\""
+            },
+            {
+                word: "רָקִיעַ",
+                day: 2,
+                dayLabel: "יוֹם ב'",
+                emoji: "🌤️",
+                simpleMeaning: "הַשָּׁמַיִם הַכְּחֻלִּים שֶׁמֵּעָלֵינוּ!",
+                kidExample: "כְּשֶׁמִּסְתַּכְּלִים לְמַעְלָה וְרוֹאִים עֲנָנִים לְבָנִים שָׁטִים – זֶהוּ הָרָקִיעַ.",
+                verseQuote: "\"וַיִּקְרָא אֱלֹהִים לָרָקִיעַ שָׁמָיִם\""
+            },
+            {
+                word: "יִקָּווּ הַמַּיִם",
+                day: 3,
+                dayLabel: "יוֹם ג'",
+                emoji: "🏝️",
+                simpleMeaning: "יֵאָסְפוּ הַמַּיִם יַחַד לְמָקוֹם אֶחָד.",
+                kidExample: "מֵהַמִּלָּה 'מִקְוֵה מַיִם' אוֹ בְּרֵכָה – כָּל הַמַּיִם נֶאֶסְפוּ לַיָּם כְּדֵי שֶׁתִּתְגַּלֶּה הַיַּבָּשָׁה!",
+                verseQuote: "\"יִקָּווּ הַמַּיִם מִתַּחַת הַשָּׁמַיִם אֶל מָקוֹם אֶחָד\""
+            },
+            {
+                word: "עֵשֶׂב מַזְרִיעַ זֶרַע",
+                day: 3,
+                dayLabel: "יוֹם ג'",
+                emoji: "🌼",
+                simpleMeaning: "צֶמַח שֶׁיֵּשׁ בְּתוֹכוֹ זְרָעִים קְטַנִּים שֶׁמֵּהֶם יִצְמְחוּ פְּרָחִים חֲדָשִׁים.",
+                kidExample: "מַמָּשׁ כְּמוֹ פֶּרַח 'שֵׁן-הָאֲרִי' שֶׁדָּנָה עָשְׂתָה עָלָיו 'אַפְּצִ'י' וְהַזְּרָעִים הִתְעוֹפְפוּ בָּרוּחַ!",
+                verseQuote: "\"וַתּוֹצֵא הָאָרֶץ דֶּשֶׁא עֵשֶׂב מַזְרִיעַ זֶרַע\""
+            },
+            {
+                word: "מְאוֹרוֹת",
+                day: 4,
+                dayLabel: "יוֹם ד'",
+                emoji: "☀️",
+                simpleMeaning: "גּוּפִים גְּדוֹלִים בֶּחָלָל שֶׁמְּפִיצִים אוֹר עַל הָעוֹלָם.",
+                kidExample: "הַמָּאוֹר הַגָּדוֹל הוּא הַשֶּׁמֶשׁ שֶׁמְּאִירָה בַּיּוֹם, וְהַמָּאוֹר הַקָּטָן הוּא הַיָּרֵחַ שֶׁמֵּאִיר בַּלַּיְלָה!",
+                verseQuote: "\"וַיַּעַשׂ אֱלֹהִים אֶת שְׁנֵי הַמְּאֹרֹת הַגְּדֹלִים\""
+            },
+            {
+                word: "מֶמְשֶׁלֶת הַיּוֹם",
+                day: 4,
+                dayLabel: "יוֹם ד'",
+                emoji: "👑",
+                simpleMeaning: "הַזְּמַן שֶׁבּוֹ הַשֶּׁמֶשׁ 'מַלְכָּה' וּמְאִירָה אֶת כָּל הַשָּׁמַיִם.",
+                kidExample: "בַּיּוֹם הַשֶּׁמֶשׁ שׁוֹלֶטֶת בָּאוֹר, וּבַלַּיְלָה הַיָּרֵחַ וְהַכּוֹכָבִים מְאִירִים בְּתוֹרָם.",
+                verseQuote: "\"אֶת הַמָּאוֹר הַגָּדֹל לְמֶמְשֶׁלֶת הַיּוֹם\""
+            },
+            {
+                word: "יִשְׁרְצוּ הַמַּיִם",
+                day: 5,
+                dayLabel: "יוֹם ה'",
+                emoji: "🐠",
+                simpleMeaning: "הַמַּיִם יִתְמַלְּאוּ בַּהֲמוֹן חַיּוֹת יָם וְדָגִים שֶׁשּׂוֹחִים וְזָזִים בְּיַחַד.",
+                kidExample: "כְּשֶׁצּוֹלְלִים בַּיָּם וְרוֹאִים לַהֲקוֹת שֶׁל דָּגִים, מֵדוּזוֹת וְדוֹלְפִינִים בְּכָל מָקוֹם!",
+                verseQuote: "\"יִשְׁרְצוּ הַמַּיִם שֶׁרֶץ נֶפֶשׁ חַיָּה\""
+            },
+            {
+                word: "הַתַּנִּינִם הַגְּדֹלִים",
+                day: 5,
+                dayLabel: "יוֹם ה'",
+                emoji: "🐋",
+                simpleMeaning: "חַיּוֹת הַיָּם הָעֲנָקִיּוֹת – כְּמוֹ לִוְיְתָנִים, דּוֹלְפִינִים וְתַנִּינִים.",
+                kidExample: "הַיְּצוּרִים הֲכִי גְּדוֹלִים וּמַרְשִׁימִים שֶׁשּׂוֹחִים בָּאוֹקְיָנוֹס.",
+                verseQuote: "\"וַיִּבְרָא אֱלֹהִים אֶת הַתַּנִּינִם הַגְּדֹלִים\""
+            },
+            {
+                word: "עוֹף יְעוֹפֵף",
+                day: 5,
+                dayLabel: "יוֹם ה'",
+                emoji: "🐦",
+                simpleMeaning: "כָּל הַצִּפּוֹרִים וּבַעֲלֵי הַכָּנָף שֶׁעָפִים בַּשָּׁמַיִם.",
+                kidExample: "דְּרוֹר, נֶשֶׁר, יוֹנָה וְיַנְשׁוּף שֶׁפּוֹרְשִׂים כְּנָפַיִם וְעָפִים מֵעַל הָעֵצִים.",
+                verseQuote: "\"וְעוֹף יְעוֹפֵף עַל הָאָרֶץ עַל פְּנֵי רְקִיעַ הַשָּׁמָיִם\""
+            },
+            {
+                word: "חַיַּת הָאָרֶץ לְמִינָהּ",
+                day: 6,
+                dayLabel: "יוֹם ו'",
+                emoji: "🦁",
+                simpleMeaning: "כָּל סוּגֵי חַיּוֹת הַיַּבָּשָׁה – כָּל מִשְׁפְּחוֹת בַּעֲלֵי הַחַיִּים.",
+                kidExample: "כְּלָבִים כְּמוֹ 'פֶּטֶל', חֲתוּלִים, פָּרוֹת, צַבִּים וַאֲרָיוֹת!",
+                verseQuote: "\"וַיַּעַשׂ אֱלֹהִים אֶת חַיַּת הָאָרֶץ לְמִינָהּ\""
+            },
+            {
+                word: "בְּצַלְמֵנוּ כִּדְמוּתֵנוּ",
+                day: 6,
+                dayLabel: "יוֹם ו'",
+                emoji: "👫",
+                simpleMeaning: "אֱלֹהִים בָּרָא אֶת הָאָדָם חָכָם, נָבוֹן וְיוֹצֵר – כְּדֵי שֶׁיּוּכַל לַעֲשׂוֹת טוֹב וְלִשְׁמֹר עַל הָעוֹלָם.",
+                kidExample: "בִּזְכוּת הַחָכְמָה שֶׁקִּבַּלְנוּ, אֲנַחְנוּ יְכוֹלִים לְטַפֵּל בַּחַיּוֹת וּבַצְּמָחִים וּלְהַמְצִיא דְּבָרִים נִפְלָאִים!",
+                verseQuote: "\"נַעֲשֶׂה אָדָם בְּצַלְמֵנוּ כִּדְמוּתֵנוּ\""
+            },
+            {
+                word: "וַיִּשְׁבֹּת / מְלַאכְתּוֹ",
+                day: 7,
+                dayLabel: "שַׁבָּת 🕯️",
+                emoji: "🕯️",
+                simpleMeaning: "'מְלָאכָה' הִיא עֲבוֹדָה וִיצִירָה, וְ'וַיִּשְׁבֹּת' פֵּרוּשׁוֹ עָצַר וְנָח מֵהָעֲבוֹדָה!",
+                kidExample: "מֵהַמִּלָּה 'וַיִּשְׁבֹּת' בָּאָה הַמִּלָּה 'שַׁבָּת' – הַיּוֹם שֶׁבּוֹ אֲנַחְנוּ נָחִים עִם הַמִּשְׁפָּחָה!",
+                verseQuote: "\"וַיִּשְׁבֹּת בַּיּוֹם הַשְּׁבִיעִי מִכָּל מְלַאכְתּוֹ אֲשֶׁר עָשָׂה\""
+            },
+            {
+                word: "וַיְקַדֵּשׁ אֹתוֹ",
+                day: 7,
+                dayLabel: "שַׁבָּת 🕯️",
+                emoji: "👑",
+                simpleMeaning: "הָפַךְ אֶת יוֹם הַשַּׁבָּת לְיוֹם מְיֻחָד, חֲגִיגִי וְקָדוֹשׁ יוֹתֵר מִכָּל שְׁאָר הַיָּמִים.",
+                kidExample: "בִּגְלַל שֶׁהַשַּׁבָּת קְדוֹשָׁה, אֲנַחְנוּ לּוֹבְשִׁים בְּגָדִים חֲגִיגִיִּים, מַדְלִיקִים נֵרוֹת וְעוֹשִׂים קִדּוּשׁ.",
+                verseQuote: "\"וַיְבָרֶךְ אֱלֹהִים אֶת יוֹם הַשְּׁבִיעִי וַיְקַדֵּשׁ אֹתוֹ\""
+            }
+        ];
+
+        let currentSlideIndex = 0; // 0-7 ימים, 8 משחק, 9 מילון
+        let currentDictDayFilter = 'all';
+        let stars = 0;
+        let answeredSlides = new Set();
+        let animFrame = 0;
+        let magicBurst = 0;
+        let day1LightOn = true;
+        let currentGameQIndex = 0;
+        let showHoloLayer = true;
+
+        let threeScene, threeCamera, threeRenderer, holoRootGroup, holoParticles;
+        let isDraggingHolo = false;
+        let prevPointer = { x: 0, y: 0 };
+        let userRot = { x: 0.15, y: 0 };
+        let holoDynamicObjects = [];
+
+        function initThreeHologram() {
+            const mount = document.getElementById('threeHoloMount');
+            if (!mount || typeof THREE === 'undefined') return;
+
+            const w = mount.clientWidth || 500;
+            const h = mount.clientHeight || 375;
+
+            threeScene = new THREE.Scene();
+            threeCamera = new THREE.PerspectiveCamera(45, w / h, 0.1, 100);
+            threeCamera.position.set(0, 1.4, 7.2);
+            threeCamera.lookAt(0, 0.2, 0);
+
+            threeRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            threeRenderer.setSize(w, h);
+            threeRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            mount.innerHTML = '';
+            mount.appendChild(threeRenderer.domElement);
+
+            // תאורה הולוגרפית עשירה
+            const ambient = new THREE.AmbientLight(0x80e5ff, 0.85);
+            threeScene.add(ambient);
+
+            const bottomBeamLight = new THREE.PointLight(0x00f2fe, 2.2, 18);
+            bottomBeamLight.position.set(0, -3.2, 1);
+            threeScene.add(bottomBeamLight);
+
+            const topAccentLight = new THREE.DirectionalLight(0xffe066, 1.4);
+            topAccentLight.position.set(4, 6, 5);
+            threeScene.add(topAccentLight);
+
+            holoRootGroup = new THREE.Group();
+            threeScene.add(holoRootGroup);
+
+            // בסיס מקרן הולוגרמה תלת-ממדי בתחתית
+            const baseGeo = new THREE.CylinderGeometry(1.7, 2.1, 0.22, 32);
+            const baseMat = new THREE.MeshStandardMaterial({
+                color: 0x0b2545,
+                emissive: 0x00a8e8,
+                emissiveIntensity: 0.45,
+                metalness: 0.8,
+                roughness: 0.2
+            });
+            const baseMesh = new THREE.Mesh(baseGeo, baseMat);
+            baseMesh.position.y = -2.25;
+            threeScene.add(baseMesh);
+
+            const ringGeo = new THREE.TorusGeometry(1.85, 0.05, 16, 64);
+            const ringMat = new THREE.MeshBasicMaterial({ color: 0x00f2fe });
+            const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+            ringMesh.rotation.x = Math.PI / 2;
+            ringMesh.position.y = -2.12;
+            threeScene.add(ringMesh);
+
+            // חלקיקי אנרגיה מרחפים באלומת ההולוגרמה
+            const pCount = 90;
+            const pGeo = new THREE.BufferGeometry();
+            const pPos = new Float32Array(pCount * 3);
+            for (let i = 0; i < pCount; i++) {
+                pPos[i * 3] = (Math.random() - 0.5) * 4.5;
+                pPos[i * 3 + 1] = (Math.random() - 0.5) * 4.2;
+                pPos[i * 3 + 2] = (Math.random() - 0.5) * 3.5;
+            }
+            pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+            const pMat = new THREE.PointsMaterial({
+                color: 0x72efdd,
+                size: 0.09,
+                transparent: true,
+                opacity: 0.8
+            });
+            holoParticles = new THREE.Points(pGeo, pMat);
+            threeScene.add(holoParticles);
+
+            // אינטראקציית סיבוב עם עכבר ומגע
+            mount.addEventListener('mousedown', (e) => {
+                isDraggingHolo = true;
+                prevPointer = { x: e.clientX, y: e.clientY };
+            });
+            window.addEventListener('mouseup', () => { isDraggingHolo = false; });
+            window.addEventListener('mousemove', (e) => {
+                if (!isDraggingHolo) return;
+                const dx = e.clientX - prevPointer.x;
+                const dy = e.clientY - prevPointer.y;
+                userRot.y += dx * 0.012;
+                userRot.x = Math.max(-0.5, Math.min(0.6, userRot.x + dy * 0.008));
+                prevPointer = { x: e.clientX, y: e.clientY };
+            });
+
+            mount.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 1) {
+                    isDraggingHolo = true;
+                    prevPointer = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+                }
+            }, { passive: true });
+            window.addEventListener('touchend', () => { isDraggingHolo = false; });
+            window.addEventListener('touchmove', (e) => {
+                if (!isDraggingHolo || e.touches.length !== 1) return;
+                const dx = e.touches[0].clientX - prevPointer.x;
+                const dy = e.touches[0].clientY - prevPointer.y;
+                userRot.y += dx * 0.012;
+                userRot.x = Math.max(-0.5, Math.min(0.6, userRot.x + dy * 0.008));
+                prevPointer = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+            }, { passive: true });
+
+            window.addEventListener('resize', resizeThreeHologram);
+            buildHologramForDay(currentSlideIndex);
+        }
+
+        function resizeThreeHologram() {
+            const mount = document.getElementById('threeHoloMount');
+            if (!mount || !threeRenderer || !threeCamera) return;
+            const w = mount.clientWidth;
+            const h = mount.clientHeight;
+            if (w === 0 || h === 0) return;
+            threeCamera.aspect = w / h;
+            threeCamera.updateProjectionMatrix();
+            threeRenderer.setSize(w, h);
+        }
+
+        function buildHologramForDay(dayIndex) {
+            if (!holoRootGroup) return;
+            while (holoRootGroup.children.length > 0) {
+                holoRootGroup.remove(holoRootGroup.children[0]);
+            }
+            holoDynamicObjects = [];
+            userRot = { x: 0.15, y: 0 };
+
+            // אפקט פתיחת אלומת הולוגרמה
+            const mount = document.getElementById('threeHoloMount');
+            const cone = document.getElementById('holoBeamCone');
+            if (mount && cone) {
+                mount.classList.remove('holo-burst-anim');
+                cone.classList.remove('holo-burst-anim');
+                void mount.offsetWidth;
+                mount.classList.add('holo-burst-anim');
+                cone.classList.add('holo-burst-anim');
+            }
+
+            if (dayIndex === 0) {
+                // פתיחה: כדור הארץ ההולוגרפי מוקף בטבעות אנרגיה של 7 ימי הבריאה
+                const globe = new THREE.Mesh(
+                    new THREE.SphereGeometry(1.15, 28, 28),
+                    new THREE.MeshStandardMaterial({
+                        color: 0x00b4d8,
+                        emissive: 0x0077b6,
+                        emissiveIntensity: 0.4,
+                        roughness: 0.25,
+                        metalness: 0.3
+                    })
+                );
+                holoRootGroup.add(globe);
+
+                // רשת הולוגרפית עוטפת
+                const wireGlobe = new THREE.Mesh(
+                    new THREE.SphereGeometry(1.22, 16, 16),
+                    new THREE.MeshBasicMaterial({ color: 0x00f2fe, wireframe: true, transparent: true, opacity: 0.35 })
+                );
+                holoRootGroup.add(wireGlobe);
+
+                for (let i = 0; i < 3; i++) {
+                    const ring = new THREE.Mesh(
+                        new THREE.TorusGeometry(1.65 + i * 0.28, 0.03, 12, 64),
+                        new THREE.MeshBasicMaterial({ color: i % 2 === 0 ? 0xffd166 : 0x00f2fe, transparent: true, opacity: 0.75 })
+                    );
+                    ring.rotation.x = Math.PI / 3 + i * 0.4;
+                    ring.rotation.y = i * 0.5;
+                    holoRootGroup.add(ring);
+                    holoDynamicObjects.push({ mesh: ring, type: 'ring', speed: 0.015 * (i + 1) });
+                }
+
+            } else if (dayIndex === 1) {
+                // יום 1: האור הראשון! נר שלהבת תלת-ממדית זוהרת ללא שמש, מחלקת אור וחושך
+                const holder = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.55, 0.75, 0.3, 24),
+                    new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.8, roughness: 0.2 })
+                );
+                holder.position.y = -1.45;
+                holoRootGroup.add(holder);
+
+                const candleBody = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.35, 0.38, 1.35, 24),
+                    new THREE.MeshStandardMaterial({ color: 0xfffdf0, emissive: 0xffe8a3, emissiveIntensity: 0.25 })
+                );
+                candleBody.position.y = -0.65;
+                holoRootGroup.add(candleBody);
+
+                // להבת האור הראשוני (שכבות להבה תלת-ממדיות נוזליות)
+                const innerFlame = new THREE.Mesh(
+                    new THREE.ConeGeometry(0.32, 0.95, 20),
+                    new THREE.MeshBasicMaterial({ color: 0xffffff })
+                );
+                innerFlame.position.y = 0.52;
+                holoRootGroup.add(innerFlame);
+
+                const midFlame = new THREE.Mesh(
+                    new THREE.ConeGeometry(0.48, 1.3, 20),
+                    new THREE.MeshBasicMaterial({ color: 0xffbe0b, transparent: true, opacity: 0.75 })
+                );
+                midFlame.position.y = 0.6;
+                holoRootGroup.add(midFlame);
+
+                const outerHalo = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.95, 20, 20),
+                    new THREE.MeshBasicMaterial({ color: 0xff9f1c, wireframe: true, transparent: true, opacity: 0.35 })
+                );
+                outerHalo.position.y = 0.65;
+                holoRootGroup.add(outerHalo);
+
+                holoDynamicObjects.push({ mesh: innerFlame, type: 'flame' });
+                holoDynamicObjects.push({ mesh: midFlame, type: 'flame' });
+                holoDynamicObjects.push({ mesh: outerHalo, type: 'pulse' });
+
+            } else if (dayIndex === 2) {
+                // יום 2: הרקיע (כיפת שמיים הולוגרפית המפרידה בין עננים וגשם למעלה למים למטה)
+                const dome = new THREE.Mesh(
+                    new THREE.SphereGeometry(1.75, 24, 16, 0, Math.PI * 2, 0, Math.PI / 2),
+                    new THREE.MeshBasicMaterial({ color: 0x00f2fe, wireframe: true, transparent: true, opacity: 0.45 })
+                );
+                dome.position.y = -0.3;
+                holoRootGroup.add(dome);
+
+                // גלי מים תחתונים
+                const sea = new THREE.Mesh(
+                    new THREE.CylinderGeometry(1.7, 1.7, 0.35, 32),
+                    new THREE.MeshStandardMaterial({ color: 0x0077b6, emissive: 0x023e8a, emissiveIntensity: 0.5, transparent: true, opacity: 0.85 })
+                );
+                sea.position.y = -1.25;
+                holoRootGroup.add(sea);
+
+                // עננים תלת-ממדיים מרחפים מעל הרקיע
+                for (let c = 0; c < 3; c++) {
+                    const cloudGroup = new THREE.Group();
+                    for (let b = 0; b < 4; b++) {
+                        const puff = new THREE.Mesh(
+                            new THREE.SphereGeometry(0.28 + (b % 2) * 0.1, 16, 16),
+                            new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x90e0ef, emissiveIntensity: 0.35 })
+                        );
+                        puff.position.set((b - 1.5) * 0.25, (b % 2) * 0.1, 0);
+                        cloudGroup.add(puff);
+                    }
+                    cloudGroup.position.set((c - 1) * 1.1, 1.15 + (c % 2) * 0.25, (c - 1) * 0.3);
+                    holoRootGroup.add(cloudGroup);
+                    holoDynamicObjects.push({ mesh: cloudGroup, type: 'float', offset: c });
+                }
+
+                // טיפות גשם תלת-ממדיות
+                for (let r = 0; r < 18; r++) {
+                    const drop = new THREE.Mesh(
+                        new THREE.ConeGeometry(0.05, 0.22, 8),
+                        new THREE.MeshBasicMaterial({ color: 0x48cae4 })
+                    );
+                    drop.position.set((Math.random() - 0.5) * 2.4, Math.random() * 2 - 0.8, (Math.random() - 0.5) * 1.5);
+                    holoRootGroup.add(drop);
+                    holoDynamicObjects.push({ mesh: drop, type: 'rain', speed: 0.04 + Math.random() * 0.03 });
+                }
+
+            } else if (dayIndex === 3) {
+                // יום 3: שונית אלמוגים תלת-ממדית מדהימה בים + אי יבשה עם עץ פרי ופרחים
+                const island = new THREE.Mesh(
+                    new THREE.CylinderGeometry(1.55, 1.85, 0.45, 28),
+                    new THREE.MeshStandardMaterial({ color: 0x2ec4b6, emissive: 0x0f4c5c, emissiveIntensity: 0.35 })
+                );
+                island.position.y = -1.15;
+                holoRootGroup.add(island);
+
+                // אלמוגים צבעוניים בשונית תלת-ממדית
+                const coralColors = [0xff4d6d, 0xff9e00, 0xb5179e, 0x00f5d4, 0xfee440];
+                for (let i = 0; i < 9; i++) {
+                    const angle = (i / 9) * Math.PI * 2;
+                    const coral = new THREE.Mesh(
+                        new THREE.TorusKnotGeometry(0.22, 0.07, 48, 8, 2, 3),
+                        new THREE.MeshStandardMaterial({
+                            color: coralColors[i % coralColors.length],
+                            emissive: coralColors[i % coralColors.length],
+                            emissiveIntensity: 0.35,
+                            roughness: 0.3
+                        })
+                    );
+                    coral.position.set(Math.cos(angle) * 1.15, -0.7, Math.sin(angle) * 1.15);
+                    holoRootGroup.add(coral);
+                    holoDynamicObjects.push({ mesh: coral, type: 'sway', offset: i });
+                }
+
+                // עץ פרי מרכזי על היבשה
+                const trunk = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.18, 0.26, 1.2, 12),
+                    new THREE.MeshStandardMaterial({ color: 0x8b5a2b })
+                );
+                trunk.position.y = -0.35;
+                holoRootGroup.add(trunk);
+
+                const crown = new THREE.Mesh(
+                    new THREE.DodecahedronGeometry(0.85, 1),
+                    new THREE.MeshStandardMaterial({ color: 0x38b000, emissive: 0x007200, emissiveIntensity: 0.3 })
+                );
+                crown.position.y = 0.55;
+                holoRootGroup.add(crown);
+
+                // פירות אדומים זוהרים על העץ
+                for (let f = 0; f < 6; f++) {
+                    const a = (f / 6) * Math.PI * 2;
+                    const apple = new THREE.Mesh(
+                        new THREE.SphereGeometry(0.11, 12, 12),
+                        new THREE.MeshBasicMaterial({ color: 0xff2a2a })
+                    );
+                    apple.position.set(Math.cos(a) * 0.72, 0.5 + (f % 2) * 0.25, Math.sin(a) * 0.72);
+                    holoRootGroup.add(apple);
+                }
+
+            } else if (dayIndex === 4) {
+                // יום 4: מערכת השמש וכוכבי הלכת חגים במסלול סביב השמש!
+                const sun = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.72, 28, 28),
+                    new THREE.MeshBasicMaterial({ color: 0xffbe0b })
+                );
+                holoRootGroup.add(sun);
+
+                const sunGlow = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.92, 20, 20),
+                    new THREE.MeshBasicMaterial({ color: 0xff9f1c, wireframe: true, transparent: true, opacity: 0.45 })
+                );
+                holoRootGroup.add(sunGlow);
+                holoDynamicObjects.push({ mesh: sunGlow, type: 'pulse' });
+
+                const planetsSpec = [
+                    { radius: 1.2, size: 0.14, color: 0xff6b6b, speed: 0.032 },
+                    { radius: 1.75, size: 0.24, color: 0x00b4d8, speed: 0.02, hasMoon: true },
+                    { radius: 2.35, size: 0.3, color: 0xf4a261, speed: 0.013, hasRings: true }
+                ];
+
+                planetsSpec.forEach((p, idx) => {
+                    // מסלול הולוגרפי
+                    const orbitRing = new THREE.Mesh(
+                        new THREE.RingGeometry(p.radius - 0.02, p.radius + 0.02, 64),
+                        new THREE.MeshBasicMaterial({ color: 0x00f2fe, side: THREE.DoubleSide, transparent: true, opacity: 0.4 })
+                    );
+                    orbitRing.rotation.x = Math.PI / 2;
+                    holoRootGroup.add(orbitRing);
+
+                    const pivot = new THREE.Group();
+                    pivot.rotation.y = idx * 2.1;
+                    holoRootGroup.add(pivot);
+
+                    const planet = new THREE.Mesh(
+                        new THREE.SphereGeometry(p.size, 20, 20),
+                        new THREE.MeshStandardMaterial({ color: p.color, emissive: p.color, emissiveIntensity: 0.3 })
+                    );
+                    planet.position.x = p.radius;
+                    pivot.add(planet);
+
+                    if (p.hasMoon) {
+                        const moon = new THREE.Mesh(
+                            new THREE.SphereGeometry(0.08, 12, 12),
+                            new THREE.MeshBasicMaterial({ color: 0xffffff })
+                        );
+                        moon.position.set(0.42, 0.15, 0);
+                        planet.add(moon);
+                        holoDynamicObjects.push({ mesh: planet, type: 'selfSpin', speed: 0.05 });
+                    }
+
+                    if (p.hasRings) {
+                        const saturnRing = new THREE.Mesh(
+                            new THREE.RingGeometry(0.38, 0.54, 32),
+                            new THREE.MeshBasicMaterial({ color: 0xffe066, side: THREE.DoubleSide, transparent: true, opacity: 0.75 })
+                        );
+                        saturnRing.rotation.x = Math.PI / 2.5;
+                        planet.add(saturnRing);
+                    }
+
+                    holoDynamicObjects.push({ mesh: pivot, type: 'orbit', speed: p.speed });
+                });
+
+            } else if (dayIndex === 5) {
+                // יום 5: להקת דגים ודולפין שוחים במערבולת ים 3D + ציפורים מעופפות למעלה
+                const seaVortex = new THREE.Mesh(
+                    new THREE.TorusGeometry(1.4, 0.03, 12, 64),
+                    new THREE.MeshBasicMaterial({ color: 0x00f2fe, transparent: true, opacity: 0.45 })
+                );
+                seaVortex.rotation.x = Math.PI / 2;
+                seaVortex.position.y = -0.5;
+                holoRootGroup.add(seaVortex);
+
+                // דגים ודולפינים תלת-ממדיים שוחים במעגל
+                for (let f = 0; f < 6; f++) {
+                    const fishPivot = new THREE.Group();
+                    fishPivot.rotation.y = (f / 6) * Math.PI * 2;
+                    holoRootGroup.add(fishPivot);
+
+                    const fishGroup = new THREE.Group();
+                    const body = new THREE.Mesh(
+                        new THREE.ConeGeometry(0.18, 0.55, 12),
+                        new THREE.MeshStandardMaterial({
+                            color: f % 2 === 0 ? 0xff9f1c : 0x00bbf9,
+                            emissive: f % 2 === 0 ? 0xff6b00 : 0x0077b6,
+                            emissiveIntensity: 0.35
+                        })
+                    );
+                    body.rotation.z = Math.PI / 2;
+                    fishGroup.add(body);
+
+                    const tail = new THREE.Mesh(
+                        new THREE.ConeGeometry(0.15, 0.25, 3),
+                        new THREE.MeshBasicMaterial({ color: 0xffe066 })
+                    );
+                    tail.rotation.z = -Math.PI / 2;
+                    tail.position.x = -0.32;
+                    fishGroup.add(tail);
+
+                    fishGroup.position.set(1.35, -0.5 + (f % 3) * 0.25, 0);
+                    fishPivot.add(fishGroup);
+                    holoDynamicObjects.push({ mesh: fishPivot, type: 'orbit', speed: 0.022 + (f % 2) * 0.008 });
+                }
+
+                // ציפורים מעופפות בחלק העליון
+                for (let b = 0; b < 4; b++) {
+                    const birdPivot = new THREE.Group();
+                    birdPivot.rotation.y = b * 1.5;
+                    holoRootGroup.add(birdPivot);
+
+                    const bird = new THREE.Mesh(
+                        new THREE.OctahedronGeometry(0.18, 0),
+                        new THREE.MeshBasicMaterial({ color: 0xff4d6d })
+                    );
+                    bird.scale.set(1.6, 0.5, 1);
+                    bird.position.set(1.1, 1.0 + (b % 2) * 0.3, 0);
+                    birdPivot.add(bird);
+                    holoDynamicObjects.push({ mesh: birdPivot, type: 'orbit', speed: -0.025 });
+                }
+
+            } else if (dayIndex === 6) {
+                // יום 6: חיות היבשה והאדם בגן עדן + לב הולוגרפי פועם של שמירה על העולם
+                const edenStage = new THREE.Mesh(
+                    new THREE.CylinderGeometry(1.65, 1.85, 0.35, 32),
+                    new THREE.MeshStandardMaterial({ color: 0x52b788, emissive: 0x1b4332, emissiveIntensity: 0.45 })
+                );
+                edenStage.position.y = -1.2;
+                holoRootGroup.add(edenStage);
+
+                // דמויות אדם וחוה תלת-ממדיות במרכז
+                [-0.4, 0.4].forEach((xPos, idx) => {
+                    const person = new THREE.Group();
+                    const head = new THREE.Mesh(
+                        new THREE.SphereGeometry(0.22, 16, 16),
+                        new THREE.MeshStandardMaterial({ color: 0xf4a261 })
+                    );
+                    head.position.y = 0.25;
+                    person.add(head);
+
+                    const torso = new THREE.Mesh(
+                        new THREE.ConeGeometry(0.32, 0.85, 16),
+                        new THREE.MeshStandardMaterial({ color: idx === 0 ? 0x2a9d8f : 0xe76f51 })
+                    );
+                    torso.position.y = -0.35;
+                    person.add(torso);
+
+                    person.position.set(xPos, -0.35, 0);
+                    holoRootGroup.add(person);
+                });
+
+                // כתר/לב אנרגטי מרחף מעליהם שמסמל אהבה ושמירה על הבריאה
+                const crownHeart = new THREE.Mesh(
+                    new THREE.OctahedronGeometry(0.42, 1),
+                    new THREE.MeshStandardMaterial({ color: 0xff4d6d, emissive: 0xff0055, emissiveIntensity: 0.5, wireframe: false })
+                );
+                crownHeart.position.y = 1.05;
+                holoRootGroup.add(crownHeart);
+                holoDynamicObjects.push({ mesh: crownHeart, type: 'pulse' });
+
+            } else if (dayIndex === 7) {
+                // יום 7: שבת קודש - זוג נרות שבת תלת-ממדיים דולקים, חלות וכתר קדושת השבת
+                const table = new THREE.Mesh(
+                    new THREE.CylinderGeometry(1.65, 1.65, 0.25, 32),
+                    new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x90e0ef, emissiveIntensity: 0.2 })
+                );
+                table.position.y = -1.2;
+                holoRootGroup.add(table);
+
+                // זוג נרות שבת תלת-ממדיים
+                [-0.55, 0.55].forEach((cx) => {
+                    const stick = new THREE.Mesh(
+                        new THREE.CylinderGeometry(0.14, 0.24, 0.65, 16),
+                        new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.85, roughness: 0.2 })
+                    );
+                    stick.position.set(cx, -0.75, 0);
+                    holoRootGroup.add(stick);
+
+                    const wax = new THREE.Mesh(
+                        new THREE.CylinderGeometry(0.11, 0.11, 0.7, 16),
+                        new THREE.MeshBasicMaterial({ color: 0xfffdf5 })
+                    );
+                    wax.position.set(cx, -0.1, 0);
+                    holoRootGroup.add(wax);
+
+                    const flame = new THREE.Mesh(
+                        new THREE.ConeGeometry(0.16, 0.45, 16),
+                        new THREE.MeshBasicMaterial({ color: 0xffbe0b })
+                    );
+                    flame.position.set(cx, 0.48, 0);
+                    holoRootGroup.add(flame);
+                    holoDynamicObjects.push({ mesh: flame, type: 'flame' });
+                });
+
+                // כוכב/כתר שבת זהוב מרחף מעל הנרות
+                const shabbatHalo = new THREE.Mesh(
+                    new THREE.TorusGeometry(1.15, 0.04, 16, 64),
+                    new THREE.MeshBasicMaterial({ color: 0xffd700 })
+                );
+                shabbatHalo.position.y = 0.45;
+                holoRootGroup.add(shabbatHalo);
+                holoDynamicObjects.push({ mesh: shabbatHalo, type: 'ring', speed: 0.015 });
+            }
+        }
+
+        function toggleHoloMode() {
+            showHoloLayer = !showHoloLayer;
+            const mount = document.getElementById('threeHoloMount');
+            const cone = document.getElementById('holoBeamCone');
+            const pixelCanvas = document.getElementById('pixelArtCanvas');
+            const btnText = document.getElementById('toggleViewText');
+
+            if (showHoloLayer) {
+                mount.style.opacity = '1';
+                cone.style.opacity = '0.7';
+                pixelCanvas.classList.replace('opacity-100', 'opacity-55');
+                btnText.textContent = 'הַצֵּג פִּיקְסֶל מָלֵא';
+            } else {
+                mount.style.opacity = '0';
+                cone.style.opacity = '0';
+                pixelCanvas.classList.replace('opacity-55', 'opacity-100');
+                btnText.textContent = 'הַפְעֵל הוֹלוֹגְרָמָה 3D';
+            }
+            playChime('magic');
+        }
+
+        // יצירת צלילים נעימים באמצעות Web Audio API ללא צורך בקבצים חיצוניים
+        let audioCtx = null;
+        function playChime(type = 'magic') {
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const now = audioCtx.currentTime;
+                const notes = type === 'correct' ? [523.25, 659.25, 783.99, 1046.5] :
+                              type === 'wrong'   ? [300, 240] :
+                                                   [587.33, 783.99, 987.77, 1174.66];
+                notes.forEach((freq, i) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, now + i * 0.08);
+                    gain.gain.setValueAtTime(0.12, now + i * 0.08);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.25);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now + i * 0.08);
+                    osc.stop(now + i * 0.08 + 0.25);
+                });
+            } catch (e) {}
+        }
+
+        const canvas = document.getElementById('pixelArtCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // פונקציות עזר לציור פיקסלים חדים
+        function pRect(x, y, w, h, color) {
+            ctx.fillStyle = color;
+            ctx.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h));
+        }
+
+        function pCircle(cx, cy, r, color) {
+            ctx.fillStyle = color;
+            for (let y = -r; y <= r; y++) {
+                for (let x = -r; x <= r; x++) {
+                    if (x * x + y * y <= r * r) {
+                        ctx.fillRect(Math.round(cx + x), Math.round(cy + y), 1, 1);
+                    }
+                }
+            }
+        }
+
+        // ציור ענן פיקסל ארט רך בסגנון דיסני
+        function drawPixelCloud(x, y, color = '#FFFFFF', shade = '#DCE8F5') {
+            pRect(x + 4, y + 6, 22, 6, shade);
+            pRect(x + 2, y + 4, 24, 6, color);
+            pCircle(x + 8, y + 4, 5, color);
+            pCircle(x + 15, y + 2, 6, color);
+            pCircle(x + 22, y + 5, 4, color);
+        }
+
+        // ציור כוכב מנצנץ בסגנון דיסני
+        function drawPixelSparkle(x, y, phase, color = '#FFF59D') {
+            const s = Math.sin(phase) > 0 ? 1 : 0;
+            pRect(x, y, 1, 1, '#FFFFFF');
+            if (s) {
+                pRect(x - 2, y, 5, 1, color);
+                pRect(x, y - 2, 1, 5, color);
+            } else {
+                pRect(x - 1, y, 3, 1, color);
+                pRect(x, y - 1, 1, 3, color);
+            }
+        }
+
+        // ציור עץ פיקסל תנ"כי עם פירות
+        function drawPixelTree(x, y, fruitColor = '#FF3B30') {
+            // גזע
+            pRect(x + 8, y + 16, 6, 16, '#6E4720');
+            pRect(x + 9, y + 16, 2, 16, '#8B5A2B');
+            // צמרת עשירה
+            pCircle(x + 11, y + 11, 10, '#1E7E34');
+            pCircle(x + 6, y + 13, 7, '#28A745');
+            pCircle(x + 16, y + 13, 7, '#218838');
+            pCircle(x + 11, y + 7, 7, '#48C774');
+            // פירות
+            if (fruitColor) {
+                pRect(x + 6, y + 9, 2, 2, fruitColor);
+                pRect(x + 14, y + 7, 2, 2, fruitColor);
+                pRect(x + 11, y + 14, 2, 2, fruitColor);
+                pRect(x + 16, y + 13, 2, 2, fruitColor);
+            }
+        }
+
+        // ציור פרח פיקסל
+        function drawPixelFlower(x, y, petalColor = '#FF69B4') {
+            pRect(x + 1, y + 3, 1, 5, '#2ECC71'); // גבעול
+            pRect(x, y + 1, 3, 3, petalColor);
+            pRect(x + 1, y + 2, 1, 1, '#FFD700'); // אבקן
+        }
+
+        function renderScene() {
+            animFrame++;
+            const t = animFrame * 0.05;
+            ctx.clearRect(0, 0, 160, 120);
+
+            if (currentSlideIndex === 0) {
+                // שקופית פתיחה: כדור הארץ הקסום מרחף בחלל עם ספר תורה פתוח ונצנוצי דיסני
+                for (let y = 0; y < 120; y += 2) {
+                    const c = Math.floor(20 + (y / 120) * 40);
+                    pRect(0, y, 160, 2, `rgb(${c}, ${Math.floor(c*0.6)}, ${c+45})`);
+                }
+                // כוכבים ברקע
+                for (let i = 0; i < 18; i++) {
+                    const sx = (i * 37) % 155 + 2;
+                    const sy = (i * 23) % 110 + 4;
+                    drawPixelSparkle(sx, sy, t + i);
+                }
+                // הילה קסומה וכדור הארץ
+                const gy = 55 + Math.sin(t) * 3;
+                pCircle(80, gy, 32, 'rgba(255, 215, 0, 0.2)');
+                pCircle(80, gy, 26, '#1E90FF'); // אוקיינוס
+                // יבשות בפיקסל
+                pCircle(74, gy - 6, 9, '#2ECC71');
+                pCircle(86, gy + 4, 8, '#27AE60');
+                pCircle(70, gy + 8, 6, '#2ECC71');
+                // עננים מסתובבים סביב הכדור
+                pRect(62 + Math.sin(t*0.8)*6, gy - 12, 14, 3, '#FFFFFF');
+                pRect(80 - Math.sin(t*0.8)*6, gy + 6, 16, 3, '#FFFFFF');
+
+            } else if (currentSlideIndex === 1) {
+                // יום 1: אור וחושך (חצי מסך לילה חשוך עם עששית, חצי מסך אור יום זהוב)
+                const splitX = day1LightOn ? 80 + Math.sin(t) * 10 : 25;
+                // צד החושך (שמאל)
+                pRect(0, 0, 160, 120, '#0D0B26');
+                for (let i = 0; i < 10; i++) {
+                    pRect((i * 19) % 150, (i * 29) % 100, 1, 1, '#7F8C8D');
+                }
+                // צד האור (ימין)
+                pRect(0, 0, splitX, 120, '#FFF3B0');
+                pRect(0, 0, splitX - 10, 120, '#FFE066');
+                // קרני אור קסומות
+                pCircle(35, 55, 22 + Math.sin(t * 2) * 3, '#FFF9DB');
+                pCircle(35, 55, 14, '#FFFFFF');
+                // קו הפרדה מנצנץ
+                pRect(splitX, 0, 2, 120, '#FFD700');
+                drawPixelSparkle(splitX, 30, t * 2);
+                drawPixelSparkle(splitX, 60, t * 2 + 1);
+                drawPixelSparkle(splitX, 90, t * 2 + 2);
+
+            } else if (currentSlideIndex === 2) {
+                // יום 2: רקיע ושמיים - הפרדה בין מים עליונים למים תחתונים
+                // שמיים תכולים
+                pRect(0, 0, 160, 82, '#74B9FF');
+                pRect(0, 25, 160, 57, '#A29BFE');
+                pRect(0, 40, 160, 42, '#81ECEC');
+                // עננים למעלה (מים מעל הרקיע)
+                const cx1 = (animFrame * 0.4) % 180 - 20;
+                const cx2 = (animFrame * 0.25 + 70) % 180 - 20;
+                drawPixelCloud(cx1, 10, '#FFFFFF', '#DFE6E9');
+                drawPixelCloud(cx2, 18, '#FFFFFF', '#DFE6E9');
+                drawPixelCloud(110, 8, '#FFFFFF', '#DFE6E9');
+
+                // טיפות גשם יורדות
+                for (let i = 0; i < 16; i++) {
+                    const rx = (i * 14 + 8) % 150;
+                    const ry = (animFrame * 2 + i * 17) % 55 + 24;
+                    pRect(rx, ry, 1, 4, '#0984E3');
+                }
+
+                // מים מתחת לרקיע (ים גלי)
+                pRect(0, 80, 160, 40, '#0984E3');
+                pRect(0, 92, 160, 28, '#0652DD');
+                for (let x = 0; x < 160; x += 12) {
+                    const wy = 80 + Math.sin(t + x * 0.2) * 2;
+                    pRect(x, wy, 8, 2, '#74B9FF');
+                }
+
+            } else if (currentSlideIndex === 3) {
+                // יום 3: יבשה, ים, דשא, פרחים (שן הארי) ועצי פרי
+                pRect(0, 0, 160, 75, '#81ECEC'); // שמיים
+                drawPixelCloud(20, 10);
+                // ים בצד שמאל
+                pRect(0, 75, 55, 45, '#0984E3');
+                for (let x = 4; x < 48; x += 12) {
+                    pRect(x, 82 + Math.sin(t + x) * 1.5, 6, 2, '#74B9FF');
+                }
+                // יבשה ירוקה וגבעות בצד ימין
+                pCircle(110, 95, 55, '#27AE60');
+                pRect(50, 75, 110, 45, '#2ECC71');
+                pRect(50, 75, 110, 4, '#55EFC4');
+                // עצי פרי
+                drawPixelTree(122, 46, '#FF3B30'); // עץ תפוחים
+                drawPixelTree(82, 50, '#FFA502');  // עץ תפוזים
+                // פרחים ושיחים
+                for (let fx = 58; fx < 150; fx += 11) {
+                    drawPixelFlower(fx, 82 + (fx % 3) * 6, fx % 2 === 0 ? '#FF6B81' : '#FFF200');
+                }
+                // זרעי שן הארי מתעופפים ברוח (כמו בסיפור של דנה ואורית!)
+                for (let s = 0; s < 8; s++) {
+                    const sx = 90 - ((animFrame * 0.7 + s * 15) % 80);
+                    const sy = 65 - Math.sin(t + s) * 12 - s * 2;
+                    pRect(sx, sy, 2, 2, '#FFFFFF');
+                }
+
+            } else if (currentSlideIndex === 4) {
+                // יום 4: שמש, ירח וכוכבים בשמיים
+                // מעבר קסום בין שמי יום לשמי לילה
+                pRect(0, 0, 80, 100, '#48CAE4'); // צד יום
+                pRect(80, 0, 80, 100, '#1D1135'); // צד לילה
+                pRect(74, 0, 12, 100, '#7209B7'); // דמדומים באמצע
+
+                // שמש חייכנית בצד היום
+                const sunY = 36 + Math.sin(t) * 2;
+                pCircle(40, sunY, 18, '#FFD166');
+                pCircle(40, sunY, 14, '#FFBE0B');
+                // חיוך לשמש (כמו בסיפור!)
+                pRect(36, sunY - 3, 2, 2, '#5C3D00');
+                pRect(43, sunY - 3, 2, 2, '#5C3D00');
+                pRect(37, sunY + 3, 7, 2, '#5C3D00');
+
+                // ירח וכוכבים בצד הלילה
+                const moonY = 36 - Math.sin(t) * 2;
+                pCircle(122, moonY, 13, '#FEF9EF');
+                pCircle(127, moonY - 3, 10, '#1D1135'); // חצי סהר
+                for (let i = 0; i < 12; i++) {
+                    drawPixelSparkle(88 + (i * 17) % 68, 10 + (i * 19) % 70, t + i);
+                }
+                // כוכב נופל כשלוחצים על קסם
+                if (magicBurst > 0) {
+                    const sx = 150 - (30 - magicBurst) * 3;
+                    const sy = 15 + (30 - magicBurst) * 1.5;
+                    pRect(sx, sy, 3, 3, '#FFFFFF');
+                    pRect(sx + 3, sy - 2, 8, 1, '#FFD700');
+                }
+                // אדמה למטה
+                pRect(0, 95, 160, 25, '#2D6A4F');
+
+            } else if (currentSlideIndex === 5) {
+                // יום 5: דגים, דולפין בים וציפורים בשמיים
+                pRect(0, 0, 160, 62, '#90E0EF'); // שמיים
+                drawPixelCloud(15, 8);
+                drawPixelCloud(105, 12);
+
+                // ציפורים מעופפות בשמיים
+                for (let b = 0; b < 4; b++) {
+                    const bx = (animFrame * 0.8 + b * 38) % 160;
+                    const by = 22 + Math.sin(t * 2 + b) * 6 + b * 5;
+                    const wingY = Math.sin(t * 6 + b) > 0 ? -2 : 2;
+                    pRect(bx, by, 5, 3, '#FF6B6B'); // גוף ציפור
+                    pRect(bx + 5, by + 1, 2, 1, '#FFD166'); // מקור
+                    pRect(bx + 1, by + wingY, 3, 2, '#FF8E8E'); // כנף
+                }
+
+                // ים עשיר בחיים
+                pRect(0, 62, 160, 58, '#0077B6');
+                pRect(0, 85, 160, 35, '#03045E');
+
+                // דולפין קופץ (כמו בסיפור של דנה בים!)
+                const dPhase = (animFrame % 100) / 100;
+                const dx = 30 + dPhase * 90;
+                const dy = 68 - Math.sin(dPhase * Math.PI) * 28;
+                pRect(dx, dy, 12, 6, '#ADE8F4');
+                pRect(dx + 2, dy - 2, 8, 2, '#90E0EF');
+                pRect(dx + 4, dy - 5, 3, 3, '#48CAE4'); // סנפיר גב
+                pRect(dx - 3, dy + 2, 3, 4, '#48CAE4'); // זנב
+
+                // דגים צבעוניים במים
+                for (let f = 0; f < 5; f++) {
+                    const fx = 150 - ((animFrame * 0.6 + f * 32) % 150);
+                    const fy = 75 + (f * 9);
+                    const fColor = f % 2 === 0 ? '#FF9F1C' : '#FFBF69';
+                    pRect(fx, fy, 6, 4, fColor);
+                    pRect(fx + 6, fy + 1, 2, 2, fColor); // זנב
+                    pRect(fx + 1, fy + 1, 1, 1, '#000000'); // עין
+                }
+
+            } else if (currentSlideIndex === 6) {
+                // יום 6: חיות היבשה (אריה, צב, כלבלב פטל) ואדם וחוה בגן עדן
+                pRect(0, 0, 160, 68, '#A8DADC'); // שמיים של גן עדן
+                pCircle(138, 20, 11, '#FFD166'); // שמש נעימה
+                pRect(0, 68, 160, 52, '#52B788'); // דשא גן עדן
+                drawPixelTree(12, 38, '#E63946');
+
+                // אדם וחוה במרכז גן עדן
+                const bob = Math.sin(t * 2) > 0 ? 1 : 0;
+                // אדם
+                pRect(68, 52 + bob, 8, 8, '#F4A261'); // ראש
+                pRect(68, 50 + bob, 8, 3, '#582F0E'); // שיער
+                pRect(67, 60 + bob, 10, 14, '#2A9D8F'); // בגד
+                // חוה
+                pRect(84, 53 + bob, 8, 8, '#F4A261'); // ראש
+                pRect(83, 50 + bob, 10, 5, '#7F4F24'); // שיער ארוך
+                pRect(83, 61 + bob, 10, 13, '#E76F51'); // שמלה
+
+                // הכלבלב החמוד "פטל" (מהסיפור!)
+                const dogX = 48 + Math.sin(t * 2) * 3;
+                pRect(dogX, 74, 9, 6, '#D68C45'); // גוף
+                pRect(dogX + 7, 70, 5, 5, '#D68C45'); // ראש
+                pRect(dogX + 11, 72, 2, 2, '#000000'); // אף
+                pRect(dogX - 2, 71, 2, 4, '#B5651D'); // זנב מכשכש
+
+                // צב חמוד עם בית על הגב (מהסיפור!)
+                const turX = 112 + (animFrame * 0.15) % 25;
+                pCircle(turX, 82, 6, '#2D6A4F'); // שריון
+                pRect(turX - 6, 82, 12, 3, '#D8F3DC');
+                pRect(turX - 9, 80, 4, 3, '#74C69D'); // ראש הצב
+
+            } else if (currentSlideIndex === 7) {
+                // יום 7: שבת קודש - שמיים זרועי כוכבים, שולחן שבת, שתי חלות וזוג נרות דולקים
+                pRect(0, 0, 160, 120, '#1B1438'); // ליל שבת קסום
+                for (let i = 0; i < 16; i++) {
+                    drawPixelSparkle((i * 29) % 150 + 5, (i * 17) % 65 + 5, t + i);
+                }
+                // שולחן שבת עם מפה לבנה חגיגית
+                pRect(20, 78, 120, 42, '#FFFFFF');
+                pRect(20, 78, 120, 4, '#FFD700'); // עיטור זהב למפה
+
+                // זוג פמוטים ונרות שבת דולקים
+                const candleX = [56, 72];
+                candleX.forEach((cx, idx) => {
+                    pRect(cx, 66, 4, 12, '#FFD700'); // פמוט זהב
+                    pRect(cx - 2, 76, 8, 2, '#D4AF37'); // בסיס פמוט
+                    pRect(cx + 1, 54, 2, 12, '#FFFDF5'); // נר לבן
+                    // להבה מרקדת והילה
+                    const flameOffset = Math.sin(t * 4 + idx) * 1;
+                    pCircle(cx + 2, 50, 8, 'rgba(255, 215, 0, 0.22)');
+                    pRect(cx + 1 + flameOffset, 48, 2, 5, '#FF9F1C');
+                    pRect(cx + 1, 50, 2, 3, '#FFFF3F');
+                });
+
+                // שתי חלות שבת קלועות על קרש
+                pRect(92, 74, 32, 4, '#8B5A2B'); // מגש עץ
+                pCircle(102, 71, 6, '#D97706');
+                pCircle(108, 71, 6, '#B45309');
+                pCircle(114, 71, 6, '#D97706');
+                // שומשום על החלה
+                pRect(102, 68, 1, 1, '#FFF3B0');
+                pRect(108, 67, 1, 1, '#FFF3B0');
+                pRect(114, 68, 1, 1, '#FFF3B0');
+            }
+
+            // אפקט קסם של נצנוצי דיסני כשלוחצים על התמונה
+            if (magicBurst > 0) {
+                magicBurst--;
+                for (let m = 0; m < 10; m++) {
+                    const mx = (m * 37 + magicBurst * 5) % 145 + 8;
+                    const my = (m * 23 + magicBurst * 3) % 100 + 10;
+                    drawPixelSparkle(mx, my, magicBurst * 0.5, '#FFD700');
+                }
+            }
+
+            if (threeRenderer && threeScene && threeCamera && holoRootGroup) {
+                if (!isDraggingHolo) {
+                    userRot.y += 0.007 + (magicBurst > 0 ? 0.04 : 0);
+                }
+                holoRootGroup.rotation.y = userRot.y;
+                holoRootGroup.rotation.x = userRot.x;
+                holoRootGroup.position.y = Math.sin(t * 1.2) * 0.12;
+
+                if (holoParticles) {
+                    holoParticles.rotation.y -= 0.005;
+                    holoParticles.position.y = (animFrame % 60) * 0.015 - 0.4;
+                }
+
+                holoDynamicObjects.forEach((item, idx) => {
+                    if (item.type === 'orbit') {
+                        item.mesh.rotation.y += item.speed * (magicBurst > 0 ? 3.5 : 1);
+                    } else if (item.type === 'ring') {
+                        item.mesh.rotation.z += item.speed;
+                        item.mesh.rotation.x += item.speed * 0.5;
+                    } else if (item.type === 'flame') {
+                        const s = 1 + Math.sin(t * 5 + idx) * 0.14 + (magicBurst > 0 ? 0.35 : 0);
+                        item.mesh.scale.set(s, 1 + Math.cos(t * 6) * 0.18, s);
+                    } else if (item.type === 'pulse') {
+                        const p = 1 + Math.sin(t * 3) * 0.12 + (magicBurst > 0 ? 0.25 : 0);
+                        item.mesh.scale.set(p, p, p);
+                        item.mesh.rotation.y += 0.02;
+                    } else if (item.type === 'rain') {
+                        item.mesh.position.y -= item.speed * (magicBurst > 0 ? 2.5 : 1);
+                        if (item.mesh.position.y < -1.1) item.mesh.position.y = 1.1;
+                    } else if (item.type === 'float') {
+                        item.mesh.position.y = 1.15 + Math.sin(t * 2 + item.offset) * 0.12;
+                    } else if (item.type === 'sway') {
+                        item.mesh.rotation.z = Math.sin(t * 2 + item.offset) * 0.2;
+                    } else if (item.type === 'selfSpin') {
+                        item.mesh.rotation.y += item.speed;
+                    }
+                });
+
+                threeRenderer.render(threeScene, threeCamera);
+            }
+
+            requestAnimationFrame(renderScene);
+        }
+
+        function renderNavigation() {
+            const nav = document.getElementById('daysNav');
+            nav.innerHTML = '';
+
+            slidesData.forEach((slide, idx) => {
+                const isActive = currentSlideIndex === idx;
+                const isDone = answeredSlides.has(idx);
+                const btn = document.createElement('button');
+                btn.className = `pixel-btn font-bold py-2 px-2 rounded-xl text-sm sm:text-base flex items-center justify-center gap-1 nikud-text ${
+                    isActive 
+                        ? 'bg-amber-400 text-amber-950 active-tab ring-4 ring-amber-200' 
+                        : 'bg-amber-100 hover:bg-amber-200 text-amber-950'
+                }`;
+                btn.innerHTML = `<span>${slide.emoji}</span><span>${slide.navLabel}</span>${isDone ? '<span class="text-xs">✅</span>' : ''}`;
+                btn.onclick = () => goToSlide(idx);
+                nav.appendChild(btn);
+            });
+
+            // כפתור תשיעי: משחק הסיכום
+            const isGame = currentSlideIndex === 8;
+            const gameBtn = document.createElement('button');
+            gameBtn.className = `pixel-btn font-bold py-2 px-2 rounded-xl text-sm sm:text-base flex items-center justify-center gap-1 nikud-text ${
+                isGame 
+                    ? 'bg-purple-500 text-white active-tab ring-4 ring-purple-300' 
+                    : 'bg-gradient-to-r from-purple-400 to-pink-400 text-white'
+            }`;
+            gameBtn.innerHTML = `<span>🎮</span><span>מִשְׂחָק!</span>`;
+            gameBtn.onclick = () => goToSlide(8);
+            nav.appendChild(gameBtn);
+
+            // כפתור עשירי: מילון המילים הקשות
+            const isDict = currentSlideIndex === 9;
+            const dictBtn = document.createElement('button');
+            dictBtn.className = `pixel-btn font-bold py-2 px-2 rounded-xl text-sm sm:text-base flex items-center justify-center gap-1 nikud-text ${
+                isDict 
+                    ? 'bg-cyan-400 text-slate-950 active-tab ring-4 ring-cyan-200' 
+                    : 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white'
+            }`;
+            dictBtn.innerHTML = `<span>📘</span><span>מִלּוֹן</span>`;
+            dictBtn.onclick = () => goToSlide(9);
+            nav.appendChild(dictBtn);
+
+            // נקודות התקדמות למטה
+            const dots = document.getElementById('progressDots');
+            dots.innerHTML = '';
+            for (let i = 0; i <= 9; i++) {
+                const dot = document.createElement('button');
+                dot.onclick = () => goToSlide(i);
+                dot.className = `h-3.5 rounded-full transition-all ${
+                    currentSlideIndex === i ? 'w-8 bg-amber-400' : 'w-3.5 bg-amber-800 hover:bg-amber-600'
+                }`;
+                dots.appendChild(dot);
+            }
+        }
+
+        function goToSlide(index) {
+            if (window.speechSynthesis) window.speechSynthesis.cancel();
+            currentSlideIndex = index;
+            renderNavigation();
+
+            const learningMod = document.getElementById('learningModule');
+            const gameMod = document.getElementById('gameModule');
+            const dictMod = document.getElementById('dictionaryModule');
+
+            learningMod.classList.add('hidden');
+            gameMod.classList.add('hidden');
+            gameMod.classList.remove('flex');
+            dictMod.classList.add('hidden');
+            dictMod.classList.remove('flex');
+
+            if (index === 8) {
+                gameMod.classList.remove('hidden');
+                gameMod.classList.add('flex');
+                initSummaryGame();
+            } else if (index === 9) {
+                dictMod.classList.remove('hidden');
+                dictMod.classList.add('flex');
+                initDictionaryModule();
+                playChime('magic');
+            } else {
+                learningMod.classList.remove('hidden');
+                updateSlideContent(slidesData[index]);
+                buildHologramForDay(index);
+                playChime('magic');
+            }
+
+            document.getElementById('prevBtn').disabled = (index === 0);
+            document.getElementById('nextBtn').disabled = (index === 9);
+        }
+
+        function updateSlideContent(slide) {
+            document.getElementById('canvasBadge').textContent = slide.badge;
+            document.getElementById('holoModelTitle').textContent = slide.holoTitle;
+            document.getElementById('daySubTitle').textContent = slide.subTitle;
+            document.getElementById('dayTitle').textContent = slide.title;
+            document.getElementById('dayEmoji').textContent = slide.emoji;
+            document.getElementById('dayVerse').textContent = `"${slide.verse}"`;
+            document.getElementById('dayStory').textContent = slide.story;
+            document.getElementById('magicBtnText').textContent = slide.magicText;
+
+            // תגיות מה נברא
+            const itemsBox = document.getElementById('createdItemsContainer');
+            itemsBox.innerHTML = '';
+            slide.createdItems.forEach(item => {
+                const badge = document.createElement('span');
+                badge.className = 'bg-amber-200/80 border border-amber-400 text-amber-950 font-bold px-3 py-1 rounded-xl text-sm sm:text-base nikud-text';
+                badge.textContent = item;
+                itemsBox.appendChild(badge);
+            });
+
+            // הצגת המילים הקשות הרלוונטיות לאותו יום בתוך השקופית
+            const dayWordsBox = document.getElementById('dayWordsContainer');
+            const quickPopup = document.getElementById('quickWordPopup');
+            dayWordsBox.innerHTML = '';
+            quickPopup.classList.add('hidden');
+
+            const relevantWords = dictionaryWords.filter(w => w.day === slide.id || (slide.id === 1 && w.word === "תֹהוּ וָבֹהוּ"));
+            relevantWords.forEach(wObj => {
+                const wBtn = document.createElement('button');
+                wBtn.className = 'pixel-btn bg-gradient-to-b from-cyan-100 to-cyan-200 hover:from-cyan-200 hover:to-cyan-300 text-indigo-950 font-bold px-3 py-1 rounded-xl text-sm sm:text-base flex items-center gap-1 border border-cyan-400 nikud-text';
+                wBtn.innerHTML = `<span>${wObj.emoji}</span><span>${wObj.word}</span>`;
+                wBtn.onclick = () => {
+                    playChime('magic');
+                    quickPopup.classList.remove('hidden');
+                    quickPopup.innerHTML = `
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="font-bold text-indigo-950 text-lg">${wObj.emoji} ${wObj.word}:</span>
+                            <button onclick="speakText('${wObj.word}. פֵּרוּשׁ הַמִּלָּה: ${wObj.simpleMeaning}')" class="bg-cyan-500 text-white px-2.5 py-0.5 rounded-lg text-xs font-bold">🔊 הַקְרֵא</button>
+                        </div>
+                        <p class="font-bold text-emerald-900">${wObj.simpleMeaning}</p>
+                        <p class="text-xs sm:text-sm text-slate-700 mt-1">💡 <strong>דּוּגְמָה:</strong> ${wObj.kidExample}</p>
+                    `;
+                };
+                dayWordsBox.appendChild(wBtn);
+            });
+
+            // בניית שאלת החשיבה של השקופית
+            document.getElementById('quizQuestion').textContent = slide.question;
+            const optsContainer = document.getElementById('quizOptions');
+            const feedback = document.getElementById('quizFeedback');
+            optsContainer.innerHTML = '';
+            feedback.className = 'hidden mt-2 p-2 rounded-xl text-center font-bold text-base nikud-text';
+
+            // ערבוב עדין של התשובות כדי שהנכונה לא תהיה תמיד ראשונה
+            const shuffled = [...slide.options].sort((a, b) => a.text.localeCompare(b.text));
+
+            shuffled.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'w-full text-right bg-white hover:bg-indigo-50 border-2 border-indigo-200 rounded-xl px-4 py-2.5 font-semibold text-base sm:text-lg text-slate-800 transition-all flex items-center justify-between nikud-text';
+                btn.innerHTML = `<span>${opt.text}</span><span class="text-indigo-400">◀</span>`;
+                btn.onclick = () => checkMiniQuiz(opt.correct, btn, feedback, slide.id);
+                optsContainer.appendChild(btn);
+            });
+        }
+
+        function checkMiniQuiz(isCorrect, btnElement, feedbackEl, slideId) {
+            feedbackEl.classList.remove('hidden');
+            if (isCorrect) {
+                playChime('correct');
+                btnElement.className = 'w-full text-right bg-emerald-100 border-2 border-emerald-500 rounded-xl px-4 py-2.5 font-bold text-base sm:text-lg text-emerald-950 flex items-center justify-between nikud-text';
+                btnElement.innerHTML = `<span>${btnElement.firstChild.textContent}</span><span>🌟</span>`;
+                feedbackEl.className = 'mt-2 p-2 rounded-xl text-center font-bold text-base bg-emerald-200 text-emerald-900 nikud-text';
+                feedbackEl.textContent = 'כָּל הַכָּבוֹד! תְּשׁוּבָה נְכוֹנָה מְאֹד! זָכִיתָ בְּכוֹכָב ⭐';
+                
+                if (!answeredSlides.has(slideId)) {
+                    answeredSlides.add(slideId);
+                    stars++;
+                    document.getElementById('starCount').textContent = stars;
+                    renderNavigation();
+                }
+                triggerCanvasMagic();
+            } else {
+                playChime('wrong');
+                btnElement.className = 'w-full text-right bg-rose-100 border-2 border-rose-400 rounded-xl px-4 py-2.5 font-semibold text-base sm:text-lg text-rose-900 flex items-center justify-between nikud-text';
+                feedbackEl.className = 'mt-2 p-2 rounded-xl text-center font-bold text-base bg-amber-100 text-amber-900 nikud-text';
+                feedbackEl.textContent = 'כִּמְעַט... נַסּוּ שׁוּב, אַתֶּם יְכוֹלִים! 💪';
+            }
+        }
+
+        function triggerCanvasMagic() {
+            magicBurst = 30;
+            if (currentSlideIndex === 1) {
+                day1LightOn = !day1LightOn;
+            }
+            playChime('magic');
+        }
+
+        function nextSlide() {
+            if (currentSlideIndex < 9) goToSlide(currentSlideIndex + 1);
+        }
+
+        function prevSlide() {
+            if (currentSlideIndex > 0) goToSlide(currentSlideIndex - 1);
+        }
+
+        function initDictionaryModule() {
+            renderDictionaryFilters();
+            filterDictionary();
+        }
+
+        function renderDictionaryFilters() {
+            const bar = document.getElementById('dictFilterBar');
+            bar.innerHTML = '';
+            const filters = [
+                { id: 'all', label: '🌟 כָּל הַמִּלִּים (17)' },
+                { id: 0, label: '🌍 פְּתִיחָה' },
+                { id: 1, label: '🕯️ יוֹם א\'' },
+                { id: 2, label: '☁️ יוֹם ב\'' },
+                { id: 3, label: '🌳 יוֹם ג\'' },
+                { id: 4, label: '☀️ יוֹם ד\'' },
+                { id: 5, label: '🐬 יוֹם ה\'' },
+                { id: 6, label: '🦁 יוֹם ו\'' },
+                { id: 7, label: '🕯️ שַׁבָּת' }
+            ];
+
+            filters.forEach(f => {
+                const active = currentDictDayFilter === f.id;
+                const btn = document.createElement('button');
+                btn.className = `pixel-btn px-3 py-1.5 rounded-xl font-bold text-sm sm:text-base nikud-text ${
+                    active ? 'bg-amber-400 text-amber-950 active-tab ring-2 ring-white' : 'bg-indigo-100 text-indigo-950 hover:bg-indigo-200'
+                }`;
+                btn.textContent = f.label;
+                btn.onclick = () => {
+                    currentDictDayFilter = f.id;
+                    renderDictionaryFilters();
+                    filterDictionary();
+                    playChime('magic');
+                };
+                bar.appendChild(btn);
+            });
+        }
+
+        function filterDictionary() {
+            const query = (document.getElementById('dictSearchInput')?.value || '').trim();
+            const grid = document.getElementById('dictionaryGrid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            // פונקציית עזר להסרת ניקוד לצורך חיפוש קל גם ללא ניקוד
+            const stripNikud = (str) => str.replace(/[\u0591-\u05C7]/g, '');
+            const cleanQuery = stripNikud(query);
+
+            const filtered = dictionaryWords.filter(item => {
+                const matchesDay = currentDictDayFilter === 'all' || item.day === currentDictDayFilter;
+                const matchesText = !cleanQuery ||
+                    stripNikud(item.word).includes(cleanQuery) ||
+                    stripNikud(item.simpleMeaning).includes(cleanQuery) ||
+                    stripNikud(item.kidExample).includes(cleanQuery);
+                return matchesDay && matchesText;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full text-center py-8 liquid-card">
+                        <div class="text-4xl mb-2">🔍</div>
+                        <p class="text-xl font-bold text-indigo-950 nikud-text">לֹא מָצָאנוּ אֶת הַמִּלָּה הַזֹּאת... נַסּוּ מִלָּה אַחֶרֶת!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            filtered.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'liquid-card p-4 flex flex-col justify-between border-2 border-cyan-300/80 hover:border-amber-400 transition-all';
+                const speechPayload = `${item.word}. פֵּרוּשׁ: ${item.simpleMeaning}. דּוּגְמָה: ${item.kidExample}`;
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-center justify-between gap-2 mb-2">
+                            <span class="bg-amber-200 text-amber-950 font-bold px-2.5 py-0.5 rounded-full text-xs border border-amber-400 nikud-text">
+                                ${item.dayLabel}
+                            </span>
+                            <button onclick="speakText('${speechPayload.replace(/'/g, "\\'")}')" class="pixel-btn bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-bold px-2.5 py-1 rounded-xl text-xs flex items-center gap-1 nikud-text">
+                                <span>🔊</span><span>הַקְרֵא</span>
+                            </button>
+                        </div>
+
+                        <div class="flex items-center gap-2.5 mb-2">
+                            <span class="text-3xl bg-indigo-100 w-12 h-12 rounded-2xl flex items-center justify-center border border-indigo-200 shadow-inner">${item.emoji}</span>
+                            <h3 class="text-xl sm:text-2xl font-bold text-indigo-950 nikud-text">${item.word}</h3>
+                        </div>
+
+                        <p class="text-base sm:text-lg font-bold text-emerald-900 bg-emerald-50/90 border border-emerald-200 p-2.5 rounded-xl mb-2 nikud-text">
+                            ✨ ${item.simpleMeaning}
+                        </p>
+
+                        <p class="text-sm sm:text-base text-slate-700 mb-2 nikud-text">
+                            💡 <strong>בְּחַיֵּי הַיּוֹם-יוֹם:</strong> ${item.kidExample}
+                        </p>
+                    </div>
+
+                    <div class="mt-2 pt-2 border-t border-amber-300/60 text-xs sm:text-sm font-bold text-amber-900 bg-amber-50/80 px-2.5 py-1.5 rounded-xl nikud-text">
+                        📜 מֵהַפָּסוּק: ${item.verseQuote}
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function speakText(text) {
+            if (!('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'he-IL';
+            utterance.rate = 0.9;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function initSummaryGame() {
+            currentGameQIndex = 0;
+            renderGameQuestion();
+
+            const grid = document.getElementById('gameDaysGrid');
+            grid.innerHTML = '';
+            const dayNames = [
+                "יוֹם רִאשׁוֹן (א')",
+                "יוֹם שֵׁנִי (ב')",
+                "יוֹם שְׁלִישִׁי (ג')",
+                "יוֹם רְבִיעִי (ד')",
+                "יוֹם חֲמִישִׁי (ה')",
+                "יוֹם שִׁשִּׁי (ו')",
+                "יוֹם שַׁבָּת (ז')"
+            ];
+
+            dayNames.forEach((dName, idx) => {
+                const dayNum = idx + 1;
+                const btn = document.createElement('button');
+                btn.className = 'pixel-btn bg-amber-200 hover:bg-amber-300 text-amber-950 font-bold py-3 px-2 rounded-2xl text-base sm:text-lg flex flex-col items-center gap-1 nikud-text';
+                btn.innerHTML = `<span class="text-2xl">${slidesData[dayNum].emoji}</span><span>${dName}</span>`;
+                btn.onclick = () => checkGameAnswer(dayNum);
+                grid.appendChild(btn);
+            });
+        }
+
+        function renderGameQuestion() {
+            const q = gameQuestions[currentGameQIndex];
+            document.getElementById('gameItemEmoji').textContent = q.emoji;
+            document.getElementById('gameItemName').textContent = q.name;
+            document.getElementById('gameProgressText').textContent = `שְׁאֵלָה ${currentGameQIndex + 1} מִתּוֹךְ ${gameQuestions.length}`;
+        }
+
+        function checkGameAnswer(selectedDay) {
+            const q = gameQuestions[currentGameQIndex];
+            const msgBox = document.getElementById('gameMessage');
+
+            if (selectedDay === q.day) {
+                playChime('correct');
+                stars++;
+                document.getElementById('starCount').textContent = stars;
+                msgBox.innerHTML = `<span class="bg-emerald-200 text-emerald-950 px-5 py-2 rounded-xl font-bold text-xl border-2 border-emerald-500 nikud-text">🎉 נָכוֹן מְאֹד! כָּל הַכָּבוֹד!</span>`;
+
+                setTimeout(() => {
+                    if (currentGameQIndex < gameQuestions.length - 1) {
+                        currentGameQIndex++;
+                        renderGameQuestion();
+                        msgBox.innerHTML = `<p class="text-xl font-bold text-indigo-900 nikud-text">וּמָה עִם הַפְּרִיט הַבָּא?</p>`;
+                    } else {
+                        msgBox.innerHTML = `
+                            <div class="bg-amber-200 border-4 border-amber-500 p-4 rounded-2xl text-center">
+                                <p class="text-2xl font-bold text-amber-950 nikud-text">🏆 סִיַּמְתֶּם אֶת כָּל הַמִּשְׂחָק בְּהַצְלָחָה! אַתֶּם אַלּוּפֵי בְּרֵאשִׁית!</p>
+                                <button onclick="initSummaryGame()" class="pixel-btn mt-3 bg-emerald-400 text-emerald-950 font-bold px-5 py-2 rounded-xl text-lg nikud-text">שַׂחֵק שׁוּב 🔄</button>
+                            </div>
+                        `;
+                    }
+                }, 900);
+            } else {
+                playChime('wrong');
+                msgBox.innerHTML = `<span class="bg-rose-100 text-rose-900 px-5 py-2 rounded-xl font-bold text-xl border-2 border-rose-400 nikud-text">🤔 לֹא בְּדִיּוּק... נַסּוּ יוֹם אַחֵר!</span>`;
+            }
+        }
+
+        function speakCurrentSlide() {
+            if (!('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel();
+
+            let textToRead = '';
+            if (currentSlideIndex === 8) {
+                const q = gameQuestions[currentGameQIndex];
+                textToRead = `בְּאֵיזֶה יוֹם נִבְרָא: ${q.name}?`;
+            } else if (currentSlideIndex === 9) {
+                textToRead = `מִלּוֹן הַמִּלִּים הַקָּשׁוֹת שֶׁל סֵפֶר בְּרֵאשִׁית. לִחֲצוּ עַל כָּל כַּרְטִיס מִלָּה כְּדֵי לִשְׁמֹעַ אֶת הַפֵּרוּשׁ שֶׁלָּהּ!`;
+            } else {
+                const s = slidesData[currentSlideIndex];
+                textToRead = `${s.badge}. ${s.title}. ${s.verse}. ${s.story}`;
+            }
+
+            const utterance = new SpeechSynthesisUtterance(textToRead);
+            utterance.lang = 'he-IL';
+            utterance.rate = 0.9; // קצב מתון וברור לילדים
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // ניווט באמצעות מקשי החיצים במקלדת
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') nextSlide();
+            if (e.key === 'ArrowRight') prevSlide();
+        });
+
+        // הפעלת המצגת והאנימציה עם טעינת החלון
+        window.onload = function () {
+            initThreeHologram();
+            goToSlide(0);
+            renderScene();
+        };
+    </script>
+</body>
+</html>

@@ -4,6 +4,8 @@
  * All default browser text-to-speech has been completely replaced with high-fidelity audio.
  */
 
+import { DictionaryWord } from '../types';
+
 export const ELEVENLABS_VOICE_ID = 'fuMEGqYpFlKTER3VqptM';
 export const ELEVENLABS_VOICE_NAME = 'נוֹעָה (Noa)';
 export const ELEVENLABS_SAMPLE_URL = '/audio/elevenlabs_voice_fuMEGqYpFlKTER3VqptM.mp3';
@@ -17,6 +19,7 @@ export interface VoiceStatus {
 class NarrationService {
   private isSpeakingState: boolean = false;
   private currentAudioElement: HTMLAudioElement | null = null;
+  private sequenceCancelled: boolean = false;
   private onStateChangeListeners: Array<(isSpeaking: boolean) => void> = [];
 
   constructor() {
@@ -48,6 +51,7 @@ class NarrationService {
   }
 
   public stop() {
+    this.sequenceCancelled = true;
     if (this.currentAudioElement) {
       this.currentAudioElement.pause();
       this.currentAudioElement.currentTime = 0;
@@ -64,42 +68,57 @@ class NarrationService {
     onStartCallback?: () => void,
     onEndCallback?: () => void
   ): Promise<boolean> {
-    this.stop();
-    try {
-      const audio = new Audio(url);
-      this.currentAudioElement = audio;
-
-      audio.onplay = () => {
-        this.notifyState(true);
-        if (onStartCallback) onStartCallback();
-      };
-
-      audio.onended = () => {
-        this.currentAudioElement = null;
-        this.notifyState(false);
-        if (onEndCallback) onEndCallback();
-      };
-
-      audio.onerror = () => {
-        this.currentAudioElement = null;
-        this.notifyState(false);
-        if (onEndCallback) onEndCallback();
-      };
-
-      await audio.play();
-      return true;
-    } catch (e) {
-      console.warn('Audio play error for URL:', url, e);
-      this.notifyState(false);
-      if (onEndCallback) onEndCallback();
-      return false;
+    if (this.currentAudioElement) {
+      this.currentAudioElement.pause();
+      this.currentAudioElement.currentTime = 0;
+      this.currentAudioElement = null;
     }
+
+    return new Promise<boolean>((resolve) => {
+      try {
+        const audio = new Audio(url);
+        this.currentAudioElement = audio;
+
+        audio.onplay = () => {
+          this.notifyState(true);
+          if (onStartCallback) onStartCallback();
+        };
+
+        audio.onended = () => {
+          this.currentAudioElement = null;
+          this.notifyState(false);
+          if (onEndCallback) onEndCallback();
+          resolve(true);
+        };
+
+        audio.onerror = () => {
+          this.currentAudioElement = null;
+          this.notifyState(false);
+          if (onEndCallback) onEndCallback();
+          resolve(false);
+        };
+
+        audio.play().catch((err) => {
+          console.warn('Audio play error for URL:', url, err);
+          this.currentAudioElement = null;
+          this.notifyState(false);
+          if (onEndCallback) onEndCallback();
+          resolve(false);
+        });
+      } catch (e) {
+        console.warn('Audio setup error for URL:', url, e);
+        this.notifyState(false);
+        if (onEndCallback) onEndCallback();
+        resolve(false);
+      }
+    });
   }
 
   /**
    * Play the official ElevenLabs sample for voice fuMEGqYpFlKTER3VqptM
    */
   public async playElevenLabsVoiceSample(onStartCallback?: () => void, onEndCallback?: () => void) {
+    this.sequenceCancelled = false;
     await this.playAudioUrl(ELEVENLABS_SAMPLE_URL, onStartCallback, onEndCallback);
   }
 
@@ -111,17 +130,36 @@ class NarrationService {
     text: string,
     onStartCallback?: () => void,
     onEndCallback?: () => void,
-    slideId?: number
-  ) {
-    this.stop();
+    slideId?: number,
+    wordId?: number
+  ): Promise<void> {
+    if (this.currentAudioElement) {
+      this.currentAudioElement.pause();
+      this.currentAudioElement.currentTime = 0;
+      this.currentAudioElement = null;
+    }
 
     // 1. Check for dedicated slide audio file in repository
-    if (slideId !== undefined) {
+    if (slideId !== undefined && slideId >= 0 && slideId <= 7) {
       const staticUrl = `/audio/slide_${slideId}.wav`;
       try {
         const headCheck = await fetch(staticUrl, { method: 'HEAD' });
         if (headCheck.ok) {
           const success = await this.playAudioUrl(staticUrl, onStartCallback, onEndCallback);
+          if (success) return;
+        }
+      } catch {
+        // Continue to ElevenLabs API endpoint
+      }
+    }
+
+    // 1b. Check for dedicated dictionary word audio file if pre-cached in public/audio
+    if (wordId !== undefined) {
+      const wordUrl = `/audio/word_${wordId}.wav`;
+      try {
+        const headCheck = await fetch(wordUrl, { method: 'HEAD' });
+        if (headCheck.ok) {
+          const success = await this.playAudioUrl(wordUrl, onStartCallback, onEndCallback);
           if (success) return;
         }
       } catch {
@@ -137,6 +175,8 @@ class NarrationService {
         body: JSON.stringify({
           text,
           voiceId: ELEVENLABS_VOICE_ID,
+          wordId,
+          slideId,
         }),
       });
 
@@ -144,28 +184,38 @@ class NarrationService {
       if (response.ok && contentType.startsWith('audio/')) {
         const blob = await response.blob();
         const audioUrl = URL.createObjectURL(blob);
-        const audio = new Audio(audioUrl);
-        this.currentAudioElement = audio;
 
-        audio.onplay = () => {
-          this.notifyState(true);
-          if (onStartCallback) onStartCallback();
-        };
+        await new Promise<void>((resolve) => {
+          const audio = new Audio(audioUrl);
+          this.currentAudioElement = audio;
 
-        audio.onended = () => {
-          URL.revokeObjectURL(audioUrl);
-          this.currentAudioElement = null;
-          this.notifyState(false);
-          if (onEndCallback) onEndCallback();
-        };
+          audio.onplay = () => {
+            this.notifyState(true);
+            if (onStartCallback) onStartCallback();
+          };
 
-        audio.onerror = () => {
-          URL.revokeObjectURL(audioUrl);
-          this.currentAudioElement = null;
-          this.playElevenLabsVoiceSample(onStartCallback, onEndCallback);
-        };
+          audio.onended = () => {
+            URL.revokeObjectURL(audioUrl);
+            this.currentAudioElement = null;
+            this.notifyState(false);
+            if (onEndCallback) onEndCallback();
+            resolve();
+          };
 
-        await audio.play();
+          audio.onerror = async () => {
+            URL.revokeObjectURL(audioUrl);
+            this.currentAudioElement = null;
+            await this.playElevenLabsVoiceSample(onStartCallback, onEndCallback);
+            resolve();
+          };
+
+          audio.play().catch(async () => {
+            URL.revokeObjectURL(audioUrl);
+            this.currentAudioElement = null;
+            await this.playElevenLabsVoiceSample(onStartCallback, onEndCallback);
+            resolve();
+          });
+        });
         return;
       }
     } catch (err) {
@@ -176,11 +226,53 @@ class NarrationService {
     await this.playElevenLabsVoiceSample(onStartCallback, onEndCallback);
   }
 
+  /**
+   * Speak a single dictionary word card with Noa's voice
+   */
+  public async speakDictionaryWord(
+    item: DictionaryWord,
+    onStartCallback?: () => void,
+    onEndCallback?: () => void
+  ): Promise<void> {
+    this.sequenceCancelled = false;
+    const speechText = `${item.word}. פֵּרוּשׁ: ${item.simpleMeaning}. דּוּגְמָה: ${item.kidExample}. מֵהַפָּסוּק: ${item.verseQuote}`;
+    await this.speak(speechText, onStartCallback, onEndCallback, undefined, item.id);
+  }
+
+  /**
+   * Speak the entire list of dictionary words sequentially with Noa's voice
+   */
+  public async speakFullDictionary(
+    words: DictionaryWord[],
+    onWordHighlight?: (wordId: number | null) => void,
+    onComplete?: () => void
+  ): Promise<void> {
+    this.stop();
+    this.sequenceCancelled = false;
+
+    for (const item of words) {
+      if (this.sequenceCancelled) break;
+      if (onWordHighlight) onWordHighlight(item.id);
+
+      const speechText = `${item.word}. פֵּרוּשׁ: ${item.simpleMeaning}. דּוּגְמָה: ${item.kidExample}`;
+      await this.speak(speechText, undefined, undefined, undefined, item.id);
+
+      if (this.sequenceCancelled) break;
+      // Short pause between words
+      await new Promise((r) => setTimeout(r, 350));
+    }
+
+    if (onWordHighlight) onWordHighlight(null);
+    if (onComplete) onComplete();
+  }
+
   public speakNoaAdvice(advice: string, onEnd?: () => void) {
+    this.sequenceCancelled = false;
     this.speak(`עֵצָה מִנּוֹעָה: ${advice}`, undefined, onEnd);
   }
 
   public speakEncouragement(isCorrect: boolean) {
+    this.sequenceCancelled = false;
     const praise = isCorrect ? "כָּל הַכָּבוֹד! תְּשׁוּבָה מְדֻיֶּקֶת וּמֻפְלָאָה!" : "כִּמְעַט... נַסּוּ שׁוּב!";
     this.speak(praise);
   }
