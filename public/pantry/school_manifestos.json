@@ -1,10 +1,83 @@
 {
+  "platform": {
+    "name": "הדנ\"א הבית-ספרי והמאגר הייעודי",
+    "type": "Dedicated Open Educational Platform",
+    "interface_configuration": {
+      "mode": "3-Click Teacher Interface",
+      "clicks": [
+        "1. Select Grade & Subject",
+        "2. Select Lesson Focus / Simulation",
+        "3. Launch Interactive Experience"
+      ]
+    },
+    "institutional_memory_rules": [
+      "Maintain persistent institutional memory via NotebookLM",
+      "Ensure unified school language across grades 1-6",
+      "Persist lesson history, pedagogical insights, and adaptation rules across academic years"
+    ]
+  },
   "school_name": "EduHolo Studio Production",
   "academic_year": "2026-2027",
   "active_manifestos": [
     {
-      "id": "MAN-PED-01",
-      "role": "רכזת פדגוגית בית-ספרית",
+      "id": "MAN-MATH",
+      "title": "Concrete Mathematics & Visual Quantities",
+      "statement": "Concrete Mathematics & Visual Quantities via PhET Equality Explorer and 10-frames, where symbolic equations are secondary to physical quantity comparison.",
+      "tools": [
+        "PhET Equality Explorer",
+        "10-frames"
+      ],
+      "core_principle": "Symbolic equations are secondary to physical quantity comparison",
+      "rules": [
+        "require_phet_equality_explorer",
+        "require_ten_frames",
+        "physical_quantity_comparison"
+      ]
+    },
+    {
+      "id": "MAN-ARCH",
+      "title": "3D Archaeology & Historical Artifacts",
+      "statement": "3D Archaeology & Historical Artifacts via Smithsonian 3D and Google model-viewer WebXR.",
+      "tools": [
+        "Smithsonian 3D",
+        "Google model-viewer WebXR"
+      ],
+      "rules": [
+        "require_smithsonian_3d",
+        "enable_model_viewer_webxr"
+      ]
+    },
+    {
+      "id": "MAN-SCI",
+      "title": "Living Science Simulations",
+      "statement": "Living Science Simulations via PhET HTML5, Kurzgesagt, and 3Blue1Brown.",
+      "tools": [
+        "PhET HTML5",
+        "Kurzgesagt",
+        "3Blue1Brown"
+      ],
+      "rules": [
+        "require_phet_html5",
+        "enable_kurzgesagt_visuals",
+        "enable_3blue1brown_math_vis"
+      ]
+    },
+    {
+      "id": "MAN-PED",
+      "title": "Unified Pedagogical DNA & Sensory Focus",
+      "statement": "Unified School Language across grades 1-6, NotebookLM institutional memory, and ADHD sensory focus mode.",
+      "scope": "Grades 1-6",
+      "tools": [
+        "NotebookLM"
+      ],
+      "rules": [
+        "unified_school_language_g1_6",
+        "notebooklm_institutional_memory",
+        "enable_adhd_sensory_focus_mode"
+      ]
+    }
+  ]
+}
       "statement": "למידה רב-חושית מווסתת קשב: כל שיעור משלב חוויה חזותית תלת-ממדית, פירוק ליחידות קצרות, הקראה קולית (TTS) של נועה וחיבור רגשי לעולם הילד.",
       "rules": ["require_daily_life_analogy", "require_tts_audio", "enable_adhd_clean_focus"]
     },
