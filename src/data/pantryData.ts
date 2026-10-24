@@ -172,4 +172,31 @@ export const pantryData: CreationPantryItem[] = [
       scientificConcept: "Dynamic Equilibrium & Rest Cycles"
     }
   }
+
+
+export const techStackDefinitions = {
+  stack: "HTMX + Alpine.js + SQLite-vec / Turso + Caddy + Bun",
+  components: ["HTMX", "Alpine.js", "SQLite-vec / Turso", "Caddy", "Bun"]
+};
+
+export const multidisciplinaryPantryItems = [
+  "Concrete Math Quantities via PhET Equality Explorer & 10-frames",
+  "3D Archaeology artifacts via model-viewer & Smithsonian 3D",
+  "Science simulations",
+  "Friendship SEL guide & conflict resolution keys",
+  "Transformer/BPE tokenization concepts",
+  "3-Axis ADHD matrix",
+  "53-week Merhavim calendar weeks"
 ];
+
+export const adhd3AxisMatrix = {
+  axis1: "Executive Function & Attention",
+  axis2: "Sensory Processing & Energy",
+  axis3: "Emotional Regulation & Working Memory"
+};
+
+export const merhavimCalendarWeeks = {
+  totalWeeks: 53,
+  description: "53-week Merhavim calendar weeks"
+};
+]
