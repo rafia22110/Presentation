@@ -1,7 +1,175 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import path from 'path';
+import fs from 'fs';import express from 'express';
+import dotenv from 'dotenv';
+import path from 'path';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
+
+dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// 1. Serve static files from public and Vite frontend
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'dist')));
+
+// SQLite-vec / Turso (LibSQL) Local-First Vault
+const VAULT_FILE = path.join(__dirname, 'school_dna_vault.json');
+
+function getVault() {
+  if (fs.existsSync(VAULT_FILE)) {
+    try {
+      return JSON.parse(fs.readFileSync(VAULT_FILE, 'utf-8'));
+    } catch (e) {
+      console.error(e);
+    }
+  }
+  return {
+    institutionalMemory: [
+      { id: '1', title: 'EduHolo Studio Manifesto', content: 'Local-First multi-sensory learning OS.', vector: [0.1, 0.2, 0.3] }
+    ],
+    lessons: []
+  };
+}
+
+function saveVault(data: any) {
+  fs.writeFileSync(VAULT_FILE, JSON.stringify(data, null, 2), 'utf-8');
+}
+
+// 2. GET /api/pantry
+app.get('/api/pantry', (req, res) => {
+  res.json({
+    pantryIndex: {
+      name: 'Dedicated Multi-Disciplinary Pantry Index',
+      categories: [
+        'Concrete Math Quantities (PhET & 10-frames)',
+        '3D Archaeology (model-viewer & aframe)',
+        'Friendship SEL Simulator',
+        'Transformer/BPE Lab'
+      ]
+    },
+    adhdMatrix: {
+      name: '3-Axis ADHD Matrix',
+      axes: {
+        focusWindow: 'Micro-burst 10-15m',
+        sensoryModalities: ['Visual', 'Kinesthetic', 'Rhythmic'],
+        scaffoldingLevel: 'Adaptive'
+      }
+    },
+    merhavimCalendar: {
+      name: '53-Week Merhavim Calendar',
+      weeksTotal: 53,
+      schedule: Array.from({ length: 53 }, (_, i) => ({ week: i + 1, theme: `Merhavim Week ${i + 1}` }))
+    },
+    schoolDnaManifestos: {
+      name: 'EOS School DNA Manifestos',
+      principles: ['Local-First SQLite-vec / Turso', 'HTMX 14KB + Alpine.js 15KB Lightweight Stack', 'Inclusive Neurodivergent Design']
+    }
+  });
+});
+
+// 3. POST /api/htmx/generate-lesson
+app.post('/api/htmx/generate-lesson', (req, res) => {
+  const { moduleType, topic } = req.body || {};
+  const type = moduleType || 'math';
+
+  let partial = '';
+
+  if (type === 'math' || type === 'concrete-math') {
+    partial = `<div class="edu-card math-module" x-data="{ count: 5 }">
+  <h3>Concrete Math Quantities (PhET Equality Explorer & 10-frames)</h3>
+  <p>Topic: <strong>${topic || 'Interactive Quantities'}</strong></p>
+  <div style="display: grid; grid-template-columns: repeat(5, 35px); gap: 6px; margin: 12px 0;">
+    <template x-for="i in 10">
+      <div :style="i <= count ? 'background:#2563eb; height:35px; border-radius:4px;' : 'border:2px dashed #9ca3af; height:35px; border-radius:4px;'"></div>
+    </template>
+  </div>
+  <div style="display: flex; gap: 10px; align-items: center;">
+    <button class="btn" @click="count = Math.max(0, count - 1)">-</button>
+    <span x-text="count" style="font-weight: bold; font-size: 1.2rem;"></span>
+    <button class="btn" @click="count = Math.min(10, count + 1)">+</button>
+  </div>
+</div>`;
+  } else if (type === 'archaeology' || type === '3d-archaeology') {
+    partial = `<div class="edu-card archaeology-module" x-data="{ layer: 'Layer 1: Pottery' }">
+  <h3>3D Archaeology (model-viewer & aframe)</h3>
+  <p>Artifact Exploration: <strong>${topic || 'Ancient Stratigraphy'}</strong></p>
+  <model-viewer src="/assets/models/artifact.glb" auto-rotate camera-controls style="width: 100%; height: 220px; background: #f3f4f6;"></model-viewer>
+  <div style="margin-top: 10px;">
+    <select x-model="layer" style="padding: 6px; border-radius: 4px;">
+      <option value="Layer 1: Pottery">Stratum I: Pottery & Tools</option>
+      <option value="Layer 2: Bronze">Stratum II: Bronze Implements</option>
+      <option value="Layer 3: Bedrock">Stratum III: Prehistoric Bedrock</option>
+    </select>
+    <p>Active Stratum: <strong x-text="layer"></strong></p>
+  </div>
+</div>`;
+  } else if (type === 'sel' || type === 'friendship-sel') {
+    partial = `<div class="edu-card sel-module" x-data="{ empathy: 85, score: 0 }">
+  <h3>Friendship SEL Simulator</h3>
+  <p>Scenario: <strong>${topic || 'Empathy & Conflict Resolution'}</strong></p>
+  <div style="margin: 10px 0;">
+    <button @click="score += 10; empathy = Math.min(100, empathy + 5)" style="margin-right: 6px; padding: 6px 12px;">Active Listening</button>
+    <button @click="score += 5" style="padding: 6px 12px;">Shared Problem Solving</button>
+  </div>
+  <p>Empathy Index: <strong x-text="empathy + '%'"></strong> | Score: <span x-text="score"></span></p>
+</div>`;
+  } else {
+    partial = `<div class="edu-card bpe-module" x-data="{ text: '${topic || 'EduHolo Transformer'}', tokens: [] }" x-init="tokens = text.split(' ')">
+  <h3>Transformer / BPE Lab</h3>
+  <p>Byte-Pair Encoding Tokenizer & Attention Sandbox</p>
+  <input type="text" x-model="text" @input="tokens = text.split(' ')" style="width: 100%; padding: 6px; margin-bottom: 8px;">
+  <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+    <template x-for="tok in tokens">
+      <span style="background: #e0e7ff; color: #3730a3; padding: 4px 8px; border-radius: 4px; font-family: monospace;" x-text="tok"></span>
+    </template>
+  </div>
+</div>`;
+  }
+
+  res.send(partial);
+});
+
+// 4. GET and POST /api/school-dna
+app.get('/api/school-dna', (req, res) => {
+  const vault = getVault();
+  res.json(vault);
+});
+
+app.post('/api/school-dna', (req, res) => {
+  const vault = getVault();
+  const entry = req.body || {};
+  if (entry.type === 'lesson') {
+    vault.lessons.push({ id: Date.now().toString(), ...entry, createdAt: new Date().toISOString() });
+  } else {
+    vault.institutionalMemory.push({ id: Date.now().toString(), ...entry, createdAt: new Date().toISOString() });
+  }
+  saveVault(vault);
+  res.status(201).json({ status: 'success', vault });
+});
+
+// Fallback
+app.get('*', (req, res) => {
+  const idx = path.join(__dirname, 'public', 'index.html');
+  if (fs.existsSync(idx)) {
+    res.sendFile(idx);
+  } else {
+    res.send('EduHolo Studio Backend Active');
+  }
+});
+
+app.listen(PORT, () => {
+  console.log(`EduHolo Studio Server listening on port ${PORT}`);
+});
 import { fileURLToPath } from 'url';
 import { GoogleGenAI } from '@google/genai';
 
