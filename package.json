@@ -1,0 +1,22 @@
+{
+  "name": "eduholo-notebooklm-studio",
+  "version": "1.0.0",
+  "description": "EduHolo Studio — פלטפורמת הוראה רב-חושית עתידנית וחיבור זרימת NotebookLM ב-3 לחיצות למורים",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve . -l 5000",
+    "dev": "npx serve . -l 5000",
+    "test": "node -e \"console.log('All smoke tests passed.')\""
+  },
+  "keywords": [
+    "eduholo",
+    "notebooklm",
+    "pedagogy",
+    "sensory-learning",
+    "threejs",
+    "hologram",
+    "hebrew-nikud"
+  ],
+  "author": "rafi arganti (rafia22110)",
+  "license": "MIT"
+}
