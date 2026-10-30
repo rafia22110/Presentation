@@ -4,8 +4,8 @@
   "description": "EduHolo Studio — פלטפורמת הוראה רב-חושית עתידנית וחיבור זרימת NotebookLM ב-3 לחיצות למורים",
   "main": "index.html",
   "scripts": {
-    "start": "npx serve . -l 5000",
-    "dev": "npx serve . -l 5000",
+    "start": "node server.mjs",
+    "dev": "node server.mjs",
     "test": "node -e \"console.log('All smoke tests passed.')\""
   },
   "keywords": [
