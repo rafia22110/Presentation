@@ -481,15 +481,28 @@
               </span>
             </div>
             <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
-              <div class="relative flex-1">
+              <div class="relative flex-1 flex flex-col sm:flex-row gap-2">
                 <input
                   id="mainNotebookLmUrlInput"
                   type="url"
                   dir="ltr"
-                  value="https://notebooklm.google.com/notebook/edu-holo-math-dna-2026"
+                  value="https://notebooklm.google.com/notebook/5e674188-c91b-45f1-9b5b-3fe62c291e0f"
                   placeholder="https://notebooklm.google.com/notebook/... הדבק כאן קישור למחברת או לתיקיית הנוטבוק"
-                  class="w-full bg-surface-deep/95 border border-indigo-500/40 focus:border-accent-cyan rounded-xl px-4 py-3.5 text-xs sm:text-sm text-white font-mono-badge focus:outline-none shadow-inner transition-all"
+                  class="flex-1 bg-surface-deep/95 border border-indigo-500/40 focus:border-accent-cyan rounded-xl px-4 py-3 text-xs sm:text-sm text-white font-mono-badge focus:outline-none shadow-inner transition-all"
                 />
+                <select
+                  id="mainNotebookTopicSelect"
+                  aria-label="נושא מחברת ה-NotebookLM"
+                  class="bg-surface-deep/95 border border-accent-cyan/40 focus:border-accent-cyan rounded-xl px-3 py-3 text-xs font-bold text-accent-cyan focus:outline-none sm:w-64"
+                >
+                  <option value="fractions-decomposition">🍕 מחברת שברים ושיטת הפירוק (Studio)</option>
+                  <option value="genesis-7-days">🔮 מחברת שבעת ימי הבריאה (3D וניקוד)</option>
+                  <option value="sports-jumps-comparison">🏃 מחברת חינוך גופני: קפיצה לרוחק ולגובה</option>
+                  <option value="math-sensory-quantities">⚖️ מחברת מאזני שוויון ומגשי עשרת (PhET)</option>
+                  <option value="science-matter-solar">🌿 מחברת מדעים: מערכת השמש ומחזור המים</option>
+                  <option value="archaeology-3d-layers">🏺 מחברת ארכיאולוגיה תלת-ממדית ושכבות זמן</option>
+                  <option value="sel-empathy-regulation">💚 מחברת כישורים חברתיים (SEL) ווויסות קשב</option>
+                </select>
               </div>
               <button onclick="connectNotebookLmFromBar()" class="btn-luminous text-white font-black px-6 py-3.5 rounded-xl text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer shrink-0">
                 <span class="material-symbols-outlined text-[18px]">bolt</span>
@@ -923,6 +936,29 @@
 
               <!-- Numerical Equation Reveal -->
               <div id="symbolicEquationBox" class="hidden text-center py-2 px-4 rounded-xl bg-surface-card border border-border-subtle font-black text-lg text-accent-amber" dir="ltr"></div>
+
+              <!-- Interactive Fraction Pizza & Decomposition Lab (NotebookLM Math Studio) -->
+              <div class="pt-3 border-t border-white/10">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                  <span class="text-xs font-black text-accent-cyan">🍕 מַעְבָּדַת פֵּרוּק שְׁבָרִים מוּחָשִׁית (NotebookLM Studio):</span>
+                  <div class="flex items-center gap-1">
+                    <span class="text-[11px] text-text-muted ml-1">חֲלוּקַת הַשָּׁלֵם:</span>
+                    <button onclick="setFractionSlices(2)" class="px-2 py-0.5 rounded bg-surface-card hover:bg-indigo-500/30 text-[11px] font-bold text-white border border-white/10">1/2</button>
+                    <button onclick="setFractionSlices(4)" class="px-2 py-0.5 rounded bg-surface-card hover:bg-indigo-500/30 text-[11px] font-bold text-white border border-white/10">1/4</button>
+                    <button onclick="setFractionSlices(6)" class="px-2 py-0.5 rounded bg-surface-card hover:bg-indigo-500/30 text-[11px] font-bold text-white border border-white/10">1/6</button>
+                    <button onclick="setFractionSlices(8)" class="px-2 py-0.5 rounded bg-surface-card hover:bg-indigo-500/30 text-[11px] font-bold text-white border border-white/10">1/8</button>
+                  </div>
+                </div>
+                <div class="flex flex-col sm:flex-row items-center justify-around gap-4 bg-surface-card/70 p-3 rounded-xl border border-white/5">
+                  <svg id="fractionPizzaSvg" width="130" height="130" viewBox="0 0 140 140" class="cursor-pointer select-none drop-shadow-lg"></svg>
+                  <div class="text-right space-y-1.5 flex-1">
+                    <div id="fractionFormulaDisplay" class="text-base font-black text-accent-amber font-mono-badge" dir="ltr">2 / 4 = 1 / 2 (50%)</div>
+                    <p id="fractionPedagogyHint" class="text-xs text-text-secondary leading-snug">
+                      לַחֲצוּ עַל פְּרוּסוֹת הַפִּיצָה כְּדֵי לְהַרְכִּיב וּלְפָרֵק שְׁבָרִים שְׁוֵי-עֵרֶךְ בָּעֵינַיִם לִפְנֵי מְכַנֶּה מְשֻׁתָּף!
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -1509,7 +1545,242 @@
             ],
             quiz: {
               q: 'בְּכַף יָמִין יֵשׁ 5 תַּפּוּחִים וּבְכַף שְׂמֹאל 3. כַּמָּה תַּפּוּחִים נוֹסִיף לִשְׂמֹאל כְּדֵי לְאַזֵּן?',
-              options: ['2 תַּפּוּחִים', '5 תַּפּוּחִים', 'תַּפּוּחַ 1'],
+              options: ['2 תַּפּוּחִים', '5 תַּפּוּחִים', 'תַּפּוּחַ 1', '8 תַּפּוּחִים'],
+              correct: 0
+            }
+          },
+          {
+            badge: 'מַגַּשׁ עֲשֶׂרֶת (10-Frame)',
+            title: 'הַשְׁלָמָה לְ-10 בְּמַבָּט אֶחָד לְלֹא סְפִירָה בּוֹדֶדֶת',
+            quote: 'מַגַּשׁ הָעֲשֶׂרֶת בּוֹנֶה תְּפִיסָה כַּמּוּתִית מִיָּדִית וְעוֹקֵף עִוְרוֹן מִסְפָּרִים',
+            story: 'כַּאֲשֶׁר אָנוּ מְסַדְּרִים 7 תַּפּוּחִים בְּתַבְנִית שֶׁל 10 מִשְׁבְּצוֹת (5 לְמַעְלָה וְ-2 לְמַטָּה), הָעַיִן רוֹאָה מִיָּד שֶׁנּוֹתְרוּ 3 מִשְׁבְּצוֹת פְּנוּיוֹת. כָּךְ הַיֶּלֶד מֵבִין שֶׁ-7 וְעוֹד 3 שָׁוִים 10 בְּאֹפֶן מוּחָשִׁי!',
+            pedagogy: 'עֲקִיפַת BPE: הַיֶּלֶד תּוֹפֵס אֶת הַמִּבְנֶה הַכַּמּוּתִי הַשָּׁלֵם לִפְנֵי כְּתִיבַת הַמִּשְׁוָאָה.',
+            holoType: 'solar',
+            holoCaption: 'מבנה עשרת כמותי מאוזן במרחב',
+            words: ['מַגַּשׁ עֲשֶׂרֶת', 'שִׁוְיוֹן מוּחָשִׁי'],
+            shortsDialogue: [
+              'דָּנִיֵּאל (NotebookLM): לָמָּה מַגַּשׁ עֲשֶׂרֶת עוֹזֵר כָּל כָּךְ לְתַלְמִידִים עִם הַפְרָעַת קֶשֶׁב?',
+              'נוֹעָה (NotebookLM): כִּי בִּמְקוֹם לִסְפֹּר מֵחָדָשׁ אֶחָד-אֶחָד, הַמּוֹחַ מְזַהֶה תַּבְנִית חָזוּתִית קְבוּעָה שֶׁל חֲמִשִּׁיּוֹת!'
+            ],
+            quiz: {
+              q: 'בְּמַגַּשׁ עֲשֶׂרֶת יֵשׁ 7 דִּסְקִיּוֹת צִבְעוֹנִיּוֹת. כַּמָּה מְקוֹמוֹת רֵיקִים נּוֹתְרוּ לְהַשְׁלָמַת הָעֲשֶׂרֶת?',
+              options: ['3 מְקוֹמוֹת פְּנוּיִים (7 + 3 = 10)', '5 מְקוֹמוֹת פְּנוּיִים', 'מָקוֹם אֶחָד בִּלְבַד', '10 מְקוֹמוֹת פְּנוּיִים'],
+              correct: 0
+            }
+          }
+        ]
+      },
+      {
+        id: 'fractions-decomposition',
+        title: 'פֵּרוּק שְׁבָרִים מֻרְכָּבִים וְחִבּוּר בְּלִי מְכַנֶּה מְשֻׁתָּף — מַעְבָּדַת NotebookLM Studio',
+        subject: 'math',
+        grade: 'כִּתּוֹת ג׳–ו׳ (מְנֻקָּד וּמוּחָשִׁי)',
+        mode: 'הַקְנָיָה חֲוָיָתִית',
+        defaultStage: 'math',
+        manifesto: 'עֲקִיפַת עִוְרוֹן הַמִּסְפָּרִים: מְפָרְקִים שְׁבָרִים בָּעֵינַיִם עַל פִּיצַת הַשְּׁבָרִים וּמֹאזְנֵי PhET לִפְנֵי כָּל חִשּׁוּב מֻפְשָׁט',
+        notebookUrl: 'https://notebooklm.google.com/notebook/5e674188-c91b-45f1-9b5b-3fe62c291e0f',
+        slides: [
+          {
+            badge: 'שָׁלָב 1: מַהוּ שֶׁבֶר מוּחָשִׁי?',
+            title: 'שָׁלָב 1: מַהוּ שֶׁבֶר וִיזוּאָלִי? הַשָּׁלֵם וַחֲלוּקָתוֹ לַחֲלָקִים שָׁוִים',
+            quote: '״שֶׁבֶר מְיַצֵּג חֲלוּקָה הוֹגֶנֶת וְשָׁוָה שֶׁל שָׁלֵם אֶחָד לְחֲלָקִים מְדֻיָּקִים״',
+            story: 'בְּרוּכִים הַבָּאִים לְמַעְבָּדַת הַשְּׁבָרִים מִתּוֹךְ מַחְבֶּרֶת הַ-NotebookLM! לִפְנֵי שֶׁכּוֹתְבִים מוֹנֶה וּמְכַנֶּה, אֲנַחְנוּ רוֹאִים אֶת הַפִּיצָה הַשְּׁלֵמָה: כַּאֲשֶׁר מְחַלְּקִים אוֹתָהּ לְ-4 פְּרוּסוֹת שָׁווֹת, כָּל פְּרוּסָה הִיא רֶבַע (1/4). כְּכָל שֶׁהַמְּכַנֶּה גָּדֵל — כָּל פְּרוּסָה הוֹפֶכֶת קְטַנָּה יוֹתֵר!',
+            pedagogy: 'הִתְנַסּוּת בַּבָּמָה: לַחֲצוּ עַל כַּפְתּוֹרֵי 1/2, 1/4 וְ-1/8 בְּמַעְבָּדַת הַפִּיצָה וּבִדְקוּ אֵיךְ גֹּדֶל הַפְּרוּסָה מִשְׁתַּנֶּה.',
+            holoType: 'solar',
+            holoCaption: 'חלוקה מעגלית סימטרית של השלם לחלקים שווים',
+            words: ['שֶׁבֶר מוּחָשִׁי', 'מוֹנֶה וּמְכַנֶּה', 'שִׁוְיוֹן מוּחָשִׁי'],
+            shortsDialogue: [
+              'דָּנִיֵּאל (NotebookLM): תַּלְמִידִים רַבִּים חוֹשְׁבִים שֶׁ-1/8 גָּדוֹל מֵ-1/4 כִּי 8 גָּדוֹל מֵ-4. אֵיךְ מְתַקְּנִים זֹאת?',
+              'נוֹעָה (NotebookLM): בְּרֶגַע שֶׁרוֹאִים אֶת הַפִּיצָה בָּעֵינַיִם מְבִינִים מִיָּד: בְּ-8 חֲלָקִים כָּל פְּרוּסָה דַּקָּה פִּי שְׁנַיִם מֵאֲשֶׁר בְּ-4 חֲלָקִים!'
+            ],
+            quiz: {
+              q: 'אִם חִלַּקְנוּ פִּיצָה שְׁלֵמָה לְ-4 פְּרוּסוֹת שָׁווֹת, אֵיזֶה שֶׁבֶר מְיַצֶּגֶת פְּרוּסָה אַחַת?',
+              options: ['רֶבַע מֵהַפִּיצָה (1/4)', 'חֲצִי מֵהַפִּיצָה (1/2)', 'שְׁמִינִית מֵהַפִּיצָה (1/8)', 'שָׁלֵם אֶחָד (4/4)'],
+              correct: 0
+            }
+          },
+          {
+            badge: 'שָׁלָב 2: שְׁבָרִים שְׁוֵי-עֵרֶךְ',
+            title: 'שָׁלָב 2: גִּלּוּי שְׁבָרִים שְׁוֵי-עֵרֶךְ עַל הַפִּיצָה וְהַמֹּאזְנַיִם (1/2 = 2/4 = 4/8)',
+            quote: '״שְׁנֵי רְבָעִים וַחֲצִי אֶחָד שׁוֹקְלִים בְּדִיּוּק אוֹתוֹ הַדָּבָר וּמְכַסִּים אוֹתוֹ שֶׁטַח!״',
+            story: 'שְׁבָרִים שְׁוֵי-עֵרֶךְ הֵם שְׁמוֹת שׁוֹנִים לְאוֹתָהּ הַכַּמּוּת בְּדִיּוּק. אִם נִקַּח 2 פְּרוּסוֹת מִתּוֹךְ 4 (2/4), נִרְאֶה שֶׁהֵן מְכַסּוֹת בְּדִיּוּק חֲצִי מַגָּשׁ (1/2). גַּם עַל מֹאזְנֵי הַשִּׁוְיוֹן שְׁתֵּי הַכַּפּוֹת מִתְאַזְּנוֹת לַחֲלוּטִין!',
+            pedagogy: 'דְּגַשׁ רַכֶּזֶת מָתֵמָטִיקָה: הַמְחִישׁוּ תָּמִיד שֶׁהַכַּמּוּת נִשְׁאֶרֶת קְבוּעָה גַּם כְּשֶׁמְּחַלְּקִים כָּל פְּרוּסָה לִשְׁנַיִם.',
+            holoType: 'eden',
+            holoCaption: 'איזון הרמוני מלא בין שני רבעים לחצי שלם',
+            words: ['שְׁבָרִים שְׁוֵי-עֵרֶךְ', 'שִׁוְיוֹן מוּחָשִׁי'],
+            shortsDialogue: [
+              'דָּנִיֵּאל (NotebookLM): אֵיךְ רוֹאִים שֶׁ-2/4 שָׁוֶה בְּדִיּוּק לְ-1/2 בְּלִי כֶּפֶל בַּאלְכְּסוֹן?',
+              'נוֹעָה (NotebookLM): מַנִּיחִים שְׁתֵּי פְּרוּסוֹת שֶׁל רֶבַע זוֹ לְצַד זוֹ — וְהֵן יוֹצְרוֹת חֲצִי עִגּוּל מֻשְׁלָם!'
+            ],
+            quiz: {
+              q: 'אֵיזֶה מֵהַשְּׁבָרִים הַבָּאִים שָׁוֶה בְּעֶרְכּוֹ בְּדִיּוּק לַשֶּׁבֶר 1/2 (חֲצִי)?',
+              options: ['2/4 (שְׁנֵי רְבָעִים) וְגַם 4/8', '1/4 (רֶבַע אֶחָד)', '1/3 (שְׁלִישׁ אֶחָד)', '3/8 (שְׁלֹשׁ שְׁמִינִיּוֹת)'],
+              correct: 0
+            }
+          },
+          {
+            badge: 'שָׁלָב 3: שִׁיטַת הַפֵּרוּק',
+            title: 'שָׁלָב 3: שִׁיטַת הַפֵּרוּק — חִבּוּר שְׁבָרִים בְּלִי מְכַנֶּה מְשֻׁתָּף מְסֹרְבָּל!',
+            quote: '״מְפָרְקִים שֶׁבֶר מֻרְכָּב לְאַבְנֵי בִּנְיָן פְּשׁוּטוֹת (חֲצָאִים וּרְבָעִים) וּמַשְׁלִימִים לְשָׁלֵם בִּשְׁנִיּוֹת״',
+            story: 'בְּסִרְטוֹן הַ-NotebookLM לָמַדְנוּ אֶת שִׁיטַת הַפֵּרוּק: נָבוֹא לְחַבֵּר 1/2 + 3/4. בִּמְקוֹם לְחַפֵּשׂ נוסחאות, אֲנַחְנוּ מְפָרְקִים אֶת 3/4 לְ-(1/2 + 1/4). עַכְשָׁו מְחַבְּרִים אֶת שְׁנֵי הַחֲצָאִים לְשָׁלֵם אֶחָד (1/2 + 1/2 = 1), וְנוֹתַר עוֹד רֶבַע: הַתּוֹצָאָה הִיא 1 וָרֶבַע!',
+            pedagogy: 'חֲשִׁיבָה גְּמִישָׁה: פֵּרוּק לְשָׁלֵם מוֹנֵעַ טָעוּיוֹת חִשּׁוּב וּמְחַזֵּק הֲבָנָה מִסְפָּרִית עֲמֻקָּה.',
+            holoType: 'flame',
+            holoCaption: 'ניצוץ פירוק השבר והרכבת השלם מ-2 חצאים',
+            words: ['שִׁיטַת הַפֵּרוּק', 'מוֹנֶה וּמְכַנֶּה'],
+            shortsDialogue: [
+              'דָּנִיֵּאל (NotebookLM): זֶה פָּשׁוּט גְּאוֹנִי! פֵּרַקְנוּ אֶת 3/4 לְחֵצִי וָרֶבַע, וְהַחֲצָאִים הִתְחַבְּרוּ לְפִיצָה שְׁלֵמָה!',
+              'נוֹעָה (NotebookLM): בְּדִיּוּק! כָּךְ פּוֹתְרִים שְׁבָרִים בְּרֹאשׁ בִּשְׁנִיּוֹת בְּלִי לְהִסְתַּבֵּךְ עִם כֶּפֶל מְכַנִּים.'
+            ],
+            quiz: {
+              q: 'כֵּיצַד נְפָרֵק אֶת הַשֶּׁבֶר 3/4 כְּדֵי לְחַבֵּר אוֹתוֹ מִיָּד עִם 1/2 בְּשִׁיטַת הַפֵּרוּק?',
+              options: ['נְפָרֵק אֶת 3/4 לְ-1/2 וְעוֹד 1/4, נְחַבֵּר 1/2 + 1/2 = 1, וּנְקַבֵּל 1 וָרֶבַע', 'נְחַבֵּר מוֹנֶה עִם מוֹנֶה וּמְכַנֶּה עִם מְכַנֶּה', 'נַכְפִּיל הַכֹּל בְּ-100', 'נְוַתֵּר עַל הַשֶּׁבֶר'],
+              correct: 0
+            }
+          },
+          {
+            badge: 'שָׁלָב 4: מֵהַפִּיצָה לַמֹּאזְנַיִם',
+            title: 'שָׁלָב 4: אִזּוּן מִשְׁוָאוֹת וְכַמּוּיוֹת בְּמֹאזְנֵי הַשִּׁוְיוֹן וּמַגְּשֵׁי עֲשֶׂרֶת',
+            quote: '״כָּל מִשְׁוָאָה מָתֵמָטִית הִיא מֹאזְנַיִם בְּשִׁוְיוֹן מִשְׁקָל מֻשְׁלָם״',
+            story: 'כַּאֲשֶׁר אָנוּ רוֹאִים תַּרְגִּיל עִם נֶעֱלָם אוֹ הַשְׁלָמָה, אָנוּ מַנִּיחִים אֶת הַכַּמּוּיוֹת עַל שְׁתֵּי כַּפּוֹת הַמֹּאזְנַיִם. אִם בְּכַף יָמִין יֵשׁ 6 יְחִידוֹת וּבְכַף שְׂמֹאל 4 יְחִידוֹת, הַקּוֹרָה נוֹטָה יָמִינָה עַד שֶׁנּוֹסִיף 2 יְחִידוֹת לִשְׂמֹאל!',
+            pedagogy: 'שִׁלּוּב כֵּלִים: הַמּוֹרָה מַדְגִּימָה עַל הַמֹּאזְנַיִם בַּבָּמָה וְהַתַּלְמִידִים מְנַחֲשִׁים כַּמָּה יֵשׁ לְהוֹסִיף לְאִזּוּן.',
+            holoType: 'reef_tree',
+            holoCaption: 'מאזני כמות מאוזנים בשיווי משקל פיזיקלי',
+            words: ['שִׁוְיוֹן מוּחָשִׁי', 'מַגַּשׁ עֲשֶׂרֶת'],
+            shortsDialogue: [
+              'דָּנִיֵּאל (NotebookLM): אֵיךְ מְחַבְּרִים בֵּין שְׁבָרִים עֶשְׂרוֹנִיִּים לְמַגַּשׁ הָעֲשֶׂרֶת?',
+              'נוֹעָה (NotebookLM): כָּל דִּסְקִית בְּמַגַּשׁ הָעֲשֶׂרֶת הִיא עֲשִׂירִית אַחַת (1/10 אוֹ 0.1), וַחֲמֵשׁ דִּסְקִיּוֹת הֵן בְּדִיּוּק חֲצִי הַמַּגָּשׁ!'
+            ],
+            quiz: {
+              q: 'כַּמָּה דִּסְקִיּוֹת מִתּוֹךְ מַגַּשׁ עֲשֶׂרֶת (10 מְקוֹמוֹת) מְיַצְּגוֹת בְּדִיּוּק חֲצִי (1/2) מֵהַמַּגָּשׁ?',
+              options: ['5 דִּסְקִיּוֹת (5/10 = 1/2)', '2 דִּסְקִיּוֹת', '8 דִּסְקִיּוֹת', 'דִּסְקִית אַחַת'],
+              correct: 0
+            }
+          },
+          {
+            badge: 'שָׁלָב 5: אַתְגַּר הַכִּתָּה',
+            title: 'שָׁלָב 5: פִּצּוּחַ שְׁבָרִים מֻרְכָּבִים וְסִכּוּם מַעְבָּדַת הַ-NotebookLM',
+            quote: '״הֲבָנָה מוּחָשִׁית + שִׁיטַת הַפֵּרוּק = בִּטָּחוֹן מָלֵא בְּמָתֵמָטִיקָה לְכָל תַּלְמִיד וְתַלְמִידָה״',
+            story: 'הִגַּעְנוּ לְשִׂיא הַשִּׁעוּר! עַכְשָׁו כָּל הַכִּתָּה יוֹדַעַת לִרְאוֹת שְׁבָרִים בָּעֵינַיִם, לְזַהוֹת שְׁבָרִים שְׁוֵי-עֵרֶךְ עַל הַפִּיצָה, לְפָרֵק שְׁבָרִים מֻרְכָּבִים לְחֲצָאִים וּרְבָעִים, וּלְאַזֵּן כַּמּוּיוֹת עַל הַמֹּאזְנַיִם.',
+            pedagogy: 'מִבְדַּק מְסַכֵּם: הַפְעִילוּ אֶת הַשְּׁאֵלָה לְמַטָּה וְצִבְרוּ כּוֹכָבִים כִּתָּתִיִּים!',
+            holoType: 'shabbat',
+            holoCaption: 'גביע הניצחון הכיתתי במעבדת המתמטיקה המוחשית',
+            words: ['שִׁיטַת הַפֵּרוּק', 'שְׁבָרִים שְׁוֵי-עֵרֶךְ', 'שֶׁבֶר מוּחָשִׁי'],
+            shortsDialogue: [
+              'דָּנִיֵּאל (NotebookLM): אֵיזוֹ דֶּרֶךְ מֻפְלָאָה עָשִׂינוּ הַיּוֹם מֵהַהַמְחָשָׁה הַחָזוּתִית וְעַד לְפִתְרוֹן מָלֵא!',
+              'נוֹעָה (NotebookLM): כָּל הַכָּבוֹד לַכִּתָּה! נִפָּגֵשׁ בַּמַּחְבֶּרֶת הַבָּאָה שֶׁל EduHolo Studio.'
+            ],
+            quiz: {
+              q: 'מָה הַסּוֹד שֶׁלָּמַדְנוּ בַּשִּׁעוּר לְחִבּוּר מָהִיר וּמוּחָשִׁי שֶׁל שְׁבָרִים?',
+              options: ['רוֹאִים אֶת הַכַּמּוּת בָּעֵינַיִם וּמְפָרְקִים שְׁבָרִים לַחֲלָקִים מַשְׁלִימִים לְשָׁלֵם', 'מְנַחֲשִׁים מִסְפָּר אִקְרָאִי', 'מְחַבְּרִים רַק אֶת הַמְּכַנִּים', 'מִתְעַלְּמִים מֵהַשָּׁלֵם'],
+              correct: 0
+            }
+          }
+        ]
+      },
+      {
+        id: 'science-matter-solar',
+        title: 'מַדָּעִים וְחָלָל 3D: מַחְזוֹר הַמַּיִם, מִבְנֵה הַחֹמֶר וּמַעֲרֶכֶת הַשֶּׁמֶשׁ',
+        subject: 'science',
+        grade: 'כִּתּוֹת ג׳–ו׳',
+        mode: 'הַקְנָיָה חֲוָיָתִית',
+        defaultStage: 'holo',
+        manifesto: 'חֵקֶר מַדָּעִי חוּשִׁי דֶּרֶךְ הוֹלוֹגְרָמָה תְּלַת-מְמַדִּית וְסִימוּלַצְיָה חַיָּה',
+        slides: [
+          {
+            badge: 'מַחְזוֹר הַמַּיִם בַּטֶּבַע',
+            title: 'הִתְאַדּוּת, הִתְעַבּוּת וּמִשְׁקָעִים — הַמַּסָּע הָאֵינְסוֹפִי שֶׁל טִפַּת הַמַּיִם',
+            quote: '״חֹם הַשֶּׁמֶשׁ מֵרִים אֶת הַמַּיִם לָעֲנָנִים, וְהַגֶּשֶׁם מַחְזִיר חַיִּים לַיַּבָּשָׁה״',
+            story: 'הַשֶּׁמֶשׁ מְחַמֶּמֶת אֶת מֵי הַיָּם וְהוֹפֶכֶת אוֹתָם לְאֵדֵי מַיִם הָעוֹלִים לַשָּׁמַיִם (הִתְאַדּוּת). בַּגֹּבַהּ הַקַּר הָאֵדִים מִתְקָרְרִים וְיוֹצְרִים עֲנָנִים (הִתְעַבּוּת), וְכַאֲשֶׁר הַטִּפּוֹת כְּבֵדוֹת הֵן יוֹרְדוֹת כְּגֶשֶׁם!',
+            pedagogy: 'סוֹבְבוּ אֶת הוֹלוֹגְרָמַת הָרָקִיעַ וְהֶעָנָנִים כְּדֵי לִרְאוֹת אֶת תְּנוּעַת הַמַּיִם בָּאַטְמוֹסְפֵרָה.',
+            holoType: 'sky',
+            holoCaption: 'ענני גשם ומחזור המים באטמוספירה',
+            words: ['מַחְזוֹר הַמַּיִם', 'רָקִיעַ'],
+            shortsDialogue: [
+              'דָּנִיֵּאל: לְאָן נֶעֱלָמוֹת הַשְּׁלוּלִיּוֹת אַחֲרֵי שֶׁיּוֹצֵאת הַשֶּׁמֶשׁ?',
+              'נוֹעָה: הֵן לֹא נֶעֱלָמוֹת! הַמַּיִם מִתְאַדִּים לָאֲוִיר וְעוֹלִים לִיצֹר אֶת הֶעָנָן הַבָּא!'
+            ],
+            quiz: {
+              q: 'מָה גּוֹרֵם לְמֵי הַיָּם לְהִתְאַדּוֹת וְלַעֲלוֹת לַשָּׁמַיִם כְּדֵי לִיצֹר עֲנָנִים?',
+              options: ['אֲנֶרְגִּיַּת הַחֹם וְהָאוֹר שֶׁל הַשֶּׁמֶשׁ', 'רוּחַ קָרָה בַּלַּיְלָה', 'גַּלֵּי הַיָּם בִּלְבַד', 'צְמָחִים עַל הַחוֹף'],
+              correct: 0
+            }
+          },
+          {
+            badge: 'מַעֲרֶכֶת הַשֶּׁמֶשׁ 3D',
+            title: 'הַשֶּׁמֶשׁ בַּמֶּרְכָּז וּמַסְלוּלֵי כּוֹכְבֵי הַלֶּכֶת בְּתְלַת-מֵמַד',
+            quote: '״כּוֹחַ הַכְּבִידָה שֶׁל הַשֶּׁמֶשׁ מַחֲזִיק אֶת כַּדּוּר הָאָרֶץ וְכוֹכְבֵי הַלֶּכֶת בְּמַסְלוּל קָבוּעַ״',
+            story: 'הַשֶּׁמֶשׁ הִיא כּוֹכָב עֲנָק הַמְּהַוֶּה לְמַעְלָה מֵ-99% מִמַּסַּת מַעֲרֶכֶת הַשֶּׁמֶשׁ. סְבִיבָהּ חָגִים כּוֹכְבֵי הַלֶּכֶת: חַמָּה, נֹגַהּ, כַּדּוּר הָאָרֶץ וּמַאֲדִים הַסַּלְעִיִּים, וְעַנְקֵי הַגַּז צֶדֶק וְשַׁבְּתַאי.',
+            pedagogy: 'הַבִּיטוּ בַּהוֹלוֹגְרָמָה הַחֲלָלִית וְעִקְבוּ אַחַר תְּנוּעַת הַכּוֹכָבִים סְבִיב הַשֶּׁמֶשׁ.',
+            holoType: 'solar',
+            holoCaption: 'מערכת השמש התלת-ממדית במסלול היקפי חי',
+            words: ['מְאוֹרוֹת', 'מַחְזוֹר הַמַּיִם'],
+            shortsDialogue: [
+              'דָּנִיֵּאל: כַּמָּה זְמַן לוֹקֵחַ לְכַדּוּר הָאָרֶץ לְהַשְׁלִים הַקָּפָה אַחַת סְבִיב הַשֶּׁמֶשׁ?',
+              'נוֹעָה: שָׁנָה אַחַת שְׁלֵמָה — 365 יָמִים וָרֶבַע!'
+            ],
+            quiz: {
+              q: 'אֵיזֶה כּוֹכַב לֶכֶת הוּא הַקָּרוֹב בְּיוֹתֵר אֶל הַשֶּׁמֶשׁ?',
+              options: ['כּוֹכַב חַמָּה (מֶרְקוּרִי)', 'כַּדּוּר הָאָרֶץ', 'מַאֲדִים', 'שַׁבְּתַאי'],
+              correct: 0
+            }
+          }
+        ]
+      },
+      {
+        id: 'archaeology-3d-layers',
+        title: 'אַרְכֵאוֹלוֹגְיָה תְּלַת-מְמַדִּית: פִּעְנוּחַ שְׁכָבוֹת הַזְּמַן וּמִמְצָאִים עַתִּיקִים',
+        subject: 'tanakh',
+        grade: 'כִּתּוֹת ד׳–ו׳',
+        mode: 'הַקְנָיָה חֲוָיָתִית',
+        defaultStage: 'holo',
+        manifesto: 'מִחְשׁוּב מֶרְחָבִי וְחֵקֶר שְׁכָבוֹת אֲדָמָה (סְטְרָטִיגְרַפְיָה) לְהֲבָנַת הַהִיסְטוֹרְיָה',
+        slides: [
+          {
+            badge: 'חֹק הַשְּׁכָבוֹת',
+            title: 'סְטְרָטִיגְרַפְיָה: אֵיךְ הָאֲדָמָה שׁוֹמֶרֶת אֶת סִפּוּרֵי הֶעָבָר?',
+            quote: '״כְּכָל שֶׁחוֹפְרִים עָמֹק יוֹתֵר בַּתֵּל הָאַרְכֵאוֹלוֹגִי — חוֹזְרִים אָחוֹרָה בַּזְּמַן״',
+            story: 'בְּחֲפִירָה אַרְכֵאוֹלוֹגִית אָנוּ מְגַלִּים שְׁכָבוֹת הַמֻּנָּחוֹת זוֹ עַל גַּבֵּי זוֹ. הַשִּׁכְבָה הָעֶלְיוֹנָה הִיא הַחֲדָשָׁה בְּיוֹתֵר, וְהַשִּׁכְבָה הַתַּחְתּוֹנָה קְרוֹבָה לְסֶלַע הַיְּסוֹד וּמְכִילָה כְּלֵי חֶרֶס וּמַטְבְּעוֹת מִימֵי קֶדֶם.',
+            pedagogy: 'חֵקֶר מֶרְחָבִי: הַתַּלְמִידִים מַשְׁוִים בֵּין שְׁכָבוֹת הַיַּבָּשָׁה וְלוֹמְדִים לְתַאֲרֵךְ מִמְצָאִים.',
+            holoType: 'reef_tree',
+            holoCaption: 'חתך שכבות היבשה והצמחייה מעל סלע היסוד',
+            words: ['סְטְרָטִיגְרַפְיָה', 'יִקָּווּ הַמַּיִם'],
+            shortsDialogue: [
+              'דָּנִיֵּאל: אִם מָצָאתִי מַטְבֵּעַ בְּעֹמֶק מֶטֶר וְכַד חֶרֶס בְּעֹמֶק 4 מֶטְרִים, מָה עַתִּיק יוֹתֵר?',
+              'נוֹעָה: כַּד הַחֶרֶס בְּעֹמֶק 4 מֶטְרִים! כִּי הַשִּׁכְבָה הַתַּחְתּוֹנָה הֻשְׁקְעָה רִאשׁוֹנָה.'
+            ],
+            quiz: {
+              q: 'בְּאֵיזוֹ שִׁכְבָה בַּחֲפִירָה אַרְכֵאוֹלוֹגִית נִמְצָא בְּדֶרֶךְ כְּלָל אֶת הַמִּמְצָאִים הַקְּדוּמִים בְּיוֹתֵר?',
+              options: ['בַּשִּׁכְבָה הַתַּחְתּוֹנָה וְהָעֲמֻקָּה בְּיוֹתֵר', 'בַּשִּׁכְבָה הָעֶלְיוֹנָה עַל פְּנֵי הַשטח', 'עַל צַמְּרוֹת הָעֵצִים', 'בָּאֲוִיר הַפָּתוּחַ'],
+              correct: 0
+            }
+          }
+        ]
+      },
+      {
+        id: 'sel-empathy-regulation',
+        title: 'כִּשּׁוּרִים חֶבְרָתִיִּים (SEL) וְהַקְשָׁבָה פְּעִילָה בַּכִּתָּה',
+        subject: 'hebrew',
+        grade: 'כִּתּוֹת א׳–ו׳ (מְנֻקָּד)',
+        mode: 'הַקְנָיָה חֲוָיָתִית',
+        defaultStage: 'shorts',
+        manifesto: 'וִסּוּת רִגְשִׁי, אֶמְפַּתְיָה וְשִׂיחַ מְכַבֵּד לִפְנֵי כָּל אֶתְגָּר לִמּוּדִי',
+        slides: [
+          {
+            badge: 'הַקְשָׁבָה מֵהַלֵּב',
+            title: 'הַקְשָׁבָה פְּעִילָה וּפִתְרוֹן קוֹנְפְלִיקְטִים בְּשָׁלוֹם',
+            quote: '״כְּשֶׁאֲנִי מַקְשִׁיב בֶּאֱמֶת לֶחָבֵר — אֲנִי בּוֹנֶה גֶּשֶׁר שֶׁל אֵמוּן וַחֲבֵרוּת״',
+            story: 'בְּשִׂיחָה בֵּין חֲבֵרִים, הַקְשָׁבָה פְּעִילָה פֵּרוּשָׁהּ לְהַבִּיט בָּעֵינַיִם, לֹא לִקְטֹעַ אֶת הַדּוֹבֵר, וּלְהִשְׁתַּמֵּשׁ בְּמִשְׁפְּטֵי ״אֲנִי מַרְגִּישׁ...״ בִּמְקוֹם הַאֲשָׁמוֹת. כָּךְ פּוֹתְרִים אִי-הֲבָנוֹת בְּנֹעַם וּבְכָבוֹד.',
+            pedagogy: 'תִּרְגּוּל כִּתָּתִי: זּוּגוֹת תַּלְמִידִים מְתַרְגְּלִים דַּקָּה שֶׁל הַקְשָׁבָה וְשִׁקּוּף דִּבְרֵי הֶחָבֵר.',
+            holoType: 'eden',
+            holoCaption: 'מעגל הקשבה, אמפתיה וצמיחה משותפת בכיתה',
+            words: ['הַקְשָׁבָה פְּעִילָה', 'בְּצַלְמֵנוּ כִּדְמוּתֵנוּ'],
+            shortsDialogue: [
+              'דָּנִיֵּאל: מָה הַהֶבְדֵּל בֵּין לִשְׁמֹעַ לְבֵין הַקְשָׁבָה פְּעִילָה?',
+              'נוֹעָה: בְּהַקְשָׁבָה פְּעִילָה אֲנַחְנוּ מְכֻוָּנִים כֻּלָּנוּ לֶחָבֵר וּמְשַׁקְּפִים לוֹ שֶׁהֵבַנּוּ אֶת רִגְשׁוֹתָיו!'
+            ],
+            quiz: {
+              q: 'אֵיזוֹ הִתְנַהֲגוּת מַדְגִּימָה הַקְשָׁבָה פְּעִילָה וּמְכַבֶּדֶת לֶחָבֵר בַּכִּתָּה?',
+              options: ['קֶשֶׁר עַיִן, הַמְתָּנָה לְסִיּוּם דְּבָרָיו וְשִׁקּוּף מָה שֶׁהֵבַנּוּ', 'קְטִיעַת הֶחָבֵר בְּאֶמְצַע הַמִּשְׁפָּט', 'הִסְתַּכְּלוּת לְכִוּוּן אַחֵר בִּזְמַן שֶׁהוּא מְדַבֵּר', 'צְעָקוֹת כְּדֵי לְנַצֵּחַ בַּוִּכּוּחַ'],
               correct: 0
             }
           }
@@ -1537,7 +1808,15 @@
       { word: 'וַיְקַדֵּשׁ אֹתוֹ', plain: 'ויקדש אותו', meaning: 'הָפַךְ אֶת יוֹם הַשַּׁבָּת לְיוֹם מְיֻחָד, מְרוֹמָם וְקָדוֹשׁ.', example: 'בְּעֶרֶב שַׁבָּת מַדְלִיקִים נֵרוֹת וְעוֹשִׂים קִדּוּשׁ.' },
       { word: 'נִתּוּר', plain: 'ניתור', meaning: 'דְּחִיפָה חֲזָקָה שֶׁל הַקַּרְקַע בָּרַגְלַיִם כְּדֵי לְהִתְרוֹמֵם לָאֲוִיר.', example: 'נִתּוּר עָצְמָתִי עִם הֲנָפַת יָדַיִם מַעֲנִיק קְפִיצָה רְחוֹקָה.' },
       { word: 'בְּלִימַת זַעֲזוּעִים', plain: 'בלימת זעזועים', meaning: 'כִּפּוּף הַבִּרְכַּיִם בִּזְמַן הַנְּחִיתָה כְּדֵי לִשְׁמֹר עַל הַמִּפְרָקִים.', example: 'תָּמִיד נוֹחֲתִים רַךְ בְּבִרְכַּיִם כְּפוּפוֹת.' },
-      { word: 'שִׁוְיוֹן מוּחָשִׁי', plain: 'שוויון מוחשי', meaning: 'מַצָּב שֶׁבּוֹ שְׁתֵּי כַּמּוּיוֹת מְאַזְּנוֹת זוֹ אֶת זוֹ עַל הַמֹּאזְנַיִם.', example: '5 תַּפּוּחִים מִכָּל צַד יוֹצְרִים שִׁוְיוֹן מוּחָשִׁי.' }
+      { word: 'שִׁוְיוֹן מוּחָשִׁי', plain: 'שוויון מוחשי', meaning: 'מַצָּב שֶׁבּוֹ שְׁתֵּי כַּמּוּיוֹת מְאַזְּנוֹת זוֹ אֶת זוֹ עַל הַמֹּאזְנַיִם.', example: '5 תַּפּוּחִים מִכָּל צַד יוֹצְרִים שִׁוְיוֹן מוּחָשִׁי.' },
+      { word: 'שֶׁבֶר מוּחָשִׁי', plain: 'שבר מוחשי', meaning: 'חֵלֶק שָׁוֶה מִתּוֹךְ שָׁלֵם אֶחָד שֶׁנִּתָּן לִרְאוֹת וּלְהַרְגִּישׁ בָּעֵינַיִם (כְּמוֹ פְּרוּסַת פִּיצָה).', example: 'פְּרוּסָה אַחַת מִתּוֹךְ 4 פְּרוּסוֹת שָׁווֹת הִיא הַשֶּׁבֶר הַמּוּחָשִׁי רֶבַע (1/4).' },
+      { word: 'מוֹנֶה וּמְכַנֶּה', plain: 'מונה ומכנה', meaning: 'הַמְּכַנֶּה (לְמַטָּה) מְסַפֵּר לְכַמָּה חֲלָקִים שָׁוִים חִלַּקְנוּ אֶת הַשָּׁלֵם, וְהַמּוֹנֶה (לְמַעְלָה) סוֹפֵר כַּמָּה חֲלָקִים לָקַחְנוּ.', example: 'בַּשֶּׁבֶר 3/4, הַמְּכַנֶּה הוּא 4 וְהַמּוֹנֶה הוּא 3.' },
+      { word: 'שִׁיטַת הַפֵּרוּק', plain: 'שיטת הפירוק', meaning: 'פֵּרוּק שֶׁבֶר מֻרְכָּב לַחֲלָקִים פְּשׁוּטִים וּמוּכָּרִים (כְּמוֹ חֲצָאִים וּרְבָעִים) כְּדֵי לְחַבֵּר בְּלִי מְכַנֶּה מְשֻׁתָּף מְסֹרְבָּל.', example: 'בְּשִׁיטַת הַפֵּרוּק מְפָרְקִים 3/4 לְ-1/2 וְעוֹד 1/4 וּמְחַבְּרִים מִיָּד!' },
+      { word: 'שְׁבָרִים שְׁוֵי-עֵרֶךְ', plain: 'שברים שווי ערך', meaning: 'שְׁבָרִים שֶׁנִּכְתָּבִים בְּמִסְפָּרִים שׁוֹנִים אֲבָל מְיַצְּגִים בְּדִיּוּק אֶת אוֹתָהּ כַּמּוּת עַל הַמֹּאזְנַיִם וּבַפִּיצָה.', example: 'שְׁתֵּי פְּרוּסוֹת שֶׁל רֶבַע (2/4) שָׁווֹת בְּדִיּוּק לַחֲצִי פִּיצָה (1/2).' },
+      { word: 'מַגַּשׁ עֲשֶׂרֶת', plain: 'מגש עשרת', meaning: 'תַּבְנִית חָזוּתִית שֶׁל 10 מִשְׁבְּצוֹת הָעוֹזֶרֶת לִתְפֹּס כַּמּוּיוֹת וְהַשְׁלָמָה לְ-10 בְּמַבָּט אֶחָד.', example: 'בְּמַגַּשׁ עֲשֶׂרֶת עִם 7 דִּסְקִיּוֹת רוֹאִים מִיָּד שֶׁחֲסֵרוֹת 3 לְשָׁלֵם.' },
+      { word: 'מַחְזוֹר הַמַּיִם', plain: 'מחזור המים', meaning: 'הַתַּהֲלִיךְ הַטִּבְעִי שֶׁבּוֹ מַיִם מִתְאַדִּים מֵהַיָּם, הוֹפְכִים לַעֲנָנִים וְיוֹרְדִים כְּגֶשֶׁם חֲזָרָה לָאָרֶץ.', example: 'הַשֶּׁמֶשׁ מְחַמֶּמֶת אֶת פְּנֵי הַיָּם וּמַתְחִילָה אֶת מַחְזוֹר הַמַּיִם.' },
+      { word: 'סְטְרָטִיגְרַפְיָה', plain: 'סטרטיגרפיה', meaning: 'חֵקֶר שְׁכָבוֹת הָאֲדָמָה בְּאַרְכֵאוֹלוֹגְיָה — כְּכָל שֶׁהַשִּׁכְבָה עֲמֻקָּה יוֹתֵר, הַמִּמְצָאִים בָּהּ עַתִּיקִים יוֹתֵר.', example: 'בַּשִּׁכְבָה הַתַּחְתּוֹנָה מָצָאנוּ כְּלֵי חֶרֶס קְדוּמִים.' },
+      { word: 'הַקְשָׁבָה פְּעִילָה', plain: 'הקשבה פעילה', meaning: 'הַקְשָׁבָה מְלֵאָה לֶחָבֵר בְּקֶשֶׁר עַיִן, לְלֹא קְטִיעָה, וְשִׁקּוּף מָה שֶׁהוּא מַרְגִּישׁ.', example: 'בְּהַקְשָׁבָה פְּעִילָה אֲנִי אוֹמֵר לֶחָבֵר: אֲנִי מֵבִין שֶׁנִּפְגַּעְתָּ.' }
     ];
 
     // -------------------------------------------------------------------------
@@ -2046,6 +2325,8 @@
     }
 
     function renderMathScale() {
+      if (typeof renderFractionPizzaLab === "function") renderFractionPizzaLab();
+      if (typeof renderFractionPizzaLab === "function") renderFractionPizzaLab();
       const rBox = document.getElementById('mathRightItems');
       const lBox = document.getElementById('mathLeftItems');
       if (!rBox || !lBox) return;
@@ -2125,43 +2406,157 @@
       }
     }
 
+    // Helper: Clean UUIDs from URLs or titles so raw UUIDs NEVER appear in slides
+    function stripNotebookUuids(str) {
+      if (!str) return '';
+      return str
+        .replace(/https?:\/\/[^\s]+/gi, '')
+        .replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '')
+        .replace(/[0-9a-f]{8}\s+[0-9a-f]{4}\s+[0-9a-f]{4}\s+[0-9a-f]{4}\s+[0-9a-f]{12}/gi, '')
+        .replace(/שיעור חי מ-NotebookLM:?/gi, '')
+        .replace(/\(\s*\)/g, '')
+        .replace(/\s{2,}/g, ' ')
+        .trim();
+    }
+
+    // Subject-specific vocabulary & pedagogical banks so every generated lesson has real vocalized words & 4-option quizzes
+    const SUBJECT_PEDAGOGY_BANKS = {
+      math: {
+        defaultTitle: 'פֵּרוּק שְׁבָרִים מֻרְכָּבִים וְאִזּוּן כַּמּוּיוֹת — מַעְבָּדַת NotebookLM',
+        words: ['שֶׁבֶר מוּחָשִׁי', 'שִׁיטַת הַפֵּרוּק', 'שְׁבָרִים שְׁוֵי-עֵרֶךְ', 'מוֹנֶה וּמְכַנֶּה', 'שִׁוְיוֹן מוּחָשִׁי', 'מַגַּשׁ עֲשֶׂרֶת'],
+        holoTypes: ['solar', 'eden', 'flame', 'reef_tree', 'shabbat'],
+        distractors: [
+          'חִבּוּר מוֹנֶה עִם מוֹנֶה וּמְכַנֶּה עִם מְכַנֶּה לְלֹא הַמְחָשַׁת הַשָּׁלֵם',
+          'הִתְעַלְּמוּת מִגֹּדֶל הַפְּרוּסוֹת וּמֵהָאִזּוּן עַל כַּפּוֹת הַמֹּאזְנַיִם',
+          'נִחוּשׁ מִסְפָּרִי מֻפְשָׁט לְלֹא בְּדִיקַת כַּמּוּת מוּחָשִׁית'
+        ]
+      },
+      tanakh: {
+        defaultTitle: 'שִׁבְעַת יְמֵי הַבְּרִיאָה וְחֵקֶר מוֹרֶשֶׁת בִּתְלַת-מֵמַד',
+        words: ['בְּרֵאשִׁית', 'תֹהוּ וָבֹהוּ', 'וַיַּבְדֵּל', 'רָקִיעַ', 'מְאוֹרוֹת', 'בְּצַלְמֵנוּ כִּדְמוּתֵנוּ', 'וַיְקַדֵּשׁ אֹתוֹ'],
+        holoTypes: ['flame', 'sky', 'reef_tree', 'solar', 'fish_birds', 'eden', 'shabbat'],
+        distractors: [
+          'קְרִיאָה מְהִירָה לְלֹא הֲבָנַת הַפָּסוּק וְהַמִּלִּים הַמְּנֻקָּדוֹת',
+          'עִרְבּוּב בֵּין יְמֵי הַבְּרִיאָה לְלֹא הַבְחָנָה בֵּין הַבַּיִת לַדַּיָּרִים',
+          'וִתּוּר עַל הַהַמְחָשָׁה הַתְּלַת-מְמַדִּית שֶׁל הַמֻּשָּׂג'
+        ]
+      },
+      sports: {
+        defaultTitle: 'בִּיּוֹמֵכָנִיקָה שֶׁל הַתְּנוּעָה: קְפִיצָה לְרֹחַק מוּל קְפִיצָה לְגֹבַהּ',
+        words: ['נִתּוּר', 'בְּלִימַת זַעֲזוּעִים'],
+        holoTypes: ['solar', 'flame', 'eden', 'sky'],
+        distractors: [
+          'נְחִיתָה בְּבִרְכַּיִם נְעוּלוֹת וִישָׁרוֹת לְלֹא בְּלִימַת זַעֲזוּעִים',
+          'קְפִיצָה לְלֹא תְּנוּפַת יָדַיִם וּלְלֹא כִּפּוּף מִפְרָקִים',
+          'עֲצִירָה מֻחְלֶטֶת לִפְנֵי קֶרֶשׁ הַנִּתּוּר'
+        ]
+      },
+      science: {
+        defaultTitle: 'חֵקֶר מַדָּעִי תְּלַת-מְמַדִּי: מַחְזוֹר הַמַּיִם וּמַעֲרֶכֶת הַשֶּׁמֶשׁ',
+        words: ['מַחְזוֹר הַמַּיִם', 'מְאוֹרוֹת', 'רָקִיעַ', 'עֵשֶׂב מַזְרִיעַ זֶרַע'],
+        holoTypes: ['sky', 'solar', 'reef_tree', 'fish_birds', 'flame'],
+        distractors: [
+          'הֲנָחָה שֶׁהַמַּיִם נֶעֱלָמִים מֵהָעוֹלָם וְלֹא חוֹזְרִים בְּמַחְזוֹר הַטֶּבַע',
+          'הֲנָחָה שֶׁהַשֶּׁמֶשׁ סוֹבֶבֶת סְבִיב כַּדּוּר הָאָרֶץ',
+          'הִתְעַלְּמוּת מֵהַשְׁפָּעַת הַטֶּמְפֵּרָטוּרָה עַל מַצְּבֵי הַצְּבִירָה'
+        ]
+      },
+      hebrew: {
+        defaultTitle: 'שָׂפָה, הַבָּעָה מְנֻקֶּדֶת וְהַקְשָׁבָה פְּעִילָה בַּכִּתָּה',
+        words: ['הַקְשָׁבָה פְּעִילָה', 'בְּרֵאשִׁית', 'בְּצַלְמֵנוּ כִּדְמוּתֵנוּ'],
+        holoTypes: ['eden', 'flame', 'shabbat', 'sky'],
+        distractors: [
+          'קְטִיעַת דִּבְרֵי הֶחָבֵר לְלֹא הַקְשָׁבָה פְּעִילָה וּלְלֹא קֶשֶׁר עַיִן',
+          'דִּלּוּג עַל פֵּרוּשׁ הַמִּלִּים הַמְּנֻקָּדוֹת בַּמִּלּוֹן',
+          'קְרִיאָה מֵכָנִית לְלֹא הֲבָנַת הָרַעְיוֹן הַמֶּרְכָּזִי'
+        ]
+      }
+    };
+
+    function registerWordInDictionary(wordText, topicContext) {
+      const clean = wordText.trim();
+      if (!clean) return;
+      const exists = DICTIONARY_ITEMS.some(item => item.word === clean || item.plain === clean);
+      if (!exists) {
+        DICTIONARY_ITEMS.unshift({
+          word: clean,
+          plain: clean.replace(/[\u0591-\u05C7]/g, ''),
+          meaning: `מוּשַּׂג מַפְתֵּחַ מִתּוֹךְ מַחְבֶּרֶת הַ-NotebookLM בְּנוֹשֵׂא ${topicContext}: הֲבָנָה מוּחָשִׁית וְיִשּׂוּם פְּעִיל בַּכִּתָּה.`,
+          example: `בַּשִּׁעוּר הַיּוֹם הִמְחַשְׁנוּ אֶת הַמֻּשָּׂג "${clean}" עַל בָּמַת הַשִּׁעוּר הַחַיָּה.`
+        });
+      }
+    }
+
     function generateAndLaunchLesson() {
-      const subject = document.getElementById('studioSubject').value;
-      const grade = document.getElementById('studioGrade').value;
-      const mode = document.getElementById('studioMode').value;
-      const manifesto = document.getElementById('studioManifestoNote').value.trim();
-      const title = document.getElementById('studioTitle').value.trim() || 'שִׁעוּר חוּשִׁי חָדָשׁ מִ-NotebookLM';
-      const rawContent = document.getElementById('studioNotebookContent').value.trim();
+      const subject = document.getElementById('studioSubject').value || 'math';
+      const grade = document.getElementById('studioGrade').value || 'כִּתּוֹת ג׳–ד׳';
+      const mode = document.getElementById('studioMode').value || 'הַקְנָיָה חֲוָיָתִית';
+      const manifesto = document.getElementById('studioManifestoNote').value.trim() || 'לְמִידָה חוּשִׁית קְצָרָה, דּוּגְמָה מֵחַיֵּי הַיּוֹמְיוֹם וּמִלּוֹן מִלִּים קָשׁוֹת';
+      const rawTitle = stripNotebookUuids(document.getElementById('studioTitle').value.trim());
+      const rawContent = stripNotebookUuids(document.getElementById('studioNotebookContent').value.trim());
       const chosenStage = document.getElementById('studioDefaultStage').value;
 
       const stageMap = { tanakh: 'holo', sports: 'carousel', math: 'math', science: 'holo', hebrew: 'shorts' };
       const defaultStage = chosenStage === 'auto' ? (stageMap[subject] || 'holo') : chosenStage;
+      const bank = SUBJECT_PEDAGOGY_BANKS[subject] || SUBJECT_PEDAGOGY_BANKS.math;
 
-      const lines = rawContent ? rawContent.split('\n').filter(Boolean) : [
-        'פְּתִיחָה חוּשִׁית וְהַמְחָשָׁה מוּחָשִׁית שֶׁל הַנּוֹשֵׂא',
-        'הִתְנַסּוּת פְּעִילָה וְחִבּוּר לְעוֹלַם הַיְּלָדִים',
-        'סִכּוּם וּבְדִיקַת הֲבָנָה כִּתָּתִית'
-      ];
+      // If no custom lines or if the user pasted a generic NotebookLM link without custom notes, use the full rich canonical slides for that subject!
+      const rawLines = rawContent
+        ? rawContent.split('\n').map(l => stripNotebookUuids(l)).filter(l => l.length > 2 && !l.includes('פתיחה חושית מתוך מחברת ה-NotebookLM'))
+        : [];
 
-      const slides = lines.map((line, idx) => ({
-        badge: `חֵלֶק ${idx + 1}`,
-        title: line.includes(':') ? line.split(':')[0] : `${title} — שָׁלָב ${idx + 1}`,
-        quote: `דְּגַשׁ בֵּית-סִפְרִי: ${manifesto}`,
-        story: line,
-        pedagogy: `שִׁעוּר מֻתְאָם לְ-${grade} (${mode}) עַל בְּסִיס מַחְבֶּרֶת הַ-NotebookLM הַבֵּית-סִפְרִית.`,
-        holoType: ['flame', 'sky', 'reef_tree', 'solar'][idx % 4],
-        holoCaption: line,
-        words: ['בְּרֵאשִׁית', 'נִתּוּר', 'שִׁוְיוֹן מוּחָשִׁי'],
-        shortsDialogue: [
-          `דָּנִיֵּאל (NotebookLM): בַּחֵלֶק הַזֶּה אֲנַחְנוּ מִתְמַקְּדִים בְּ-${line}.`,
-          `נוֹעָה (NotebookLM): וּמַמְחִישִׁים אוֹתוֹ בְּצוּרָה חוּשִׁית וּמוּחָשִׁית לַתַּלְמִידִים.`
-        ],
-        quiz: {
-          q: `מָה הָעִקָּרוֹן הַמֶּרְכָּזִי שֶׁלָּמַדְנוּ בְּחֵלֶק ${idx + 1}?`,
-          options: [line, 'לְדַלֵּג עַל הַהַמְחָשָׁה הַחוּשִׁית'],
-          correct: 0
-        }
-      }));
+      const canonicalMatch = BUILTIN_LESSONS.find(l =>
+        (subject === 'math' && l.id === 'fractions-decomposition') ||
+        (subject === 'tanakh' && l.id === 'genesis-7-days') ||
+        (subject === 'sports' && l.id === 'sports-jumps-comparison') ||
+        (subject === 'science' && l.id === 'science-matter-solar') ||
+        (subject === 'hebrew' && l.id === 'sel-empathy-regulation')
+      ) || BUILTIN_LESSONS[0];
+
+      const title = rawTitle || bank.defaultTitle;
+
+      let slides = [];
+      if (rawLines.length === 0) {
+        // Clone rich canonical slides and customize with teacher's title/manifesto
+        slides = canonicalMatch.slides.map((s, idx) => ({
+          ...s,
+          pedagogy: `${s.pedagogy} (דְּגַשׁ הָרַכֶּזֶת: ${manifesto})`
+        }));
+      } else {
+        slides = rawLines.map((line, idx) => {
+          const parts = line.split(':');
+          const stepTitle = parts.length > 1 ? parts[0].trim() : `${title} — שָׁלָב ${idx + 1}`;
+          const stepCore = parts.length > 1 ? parts.slice(1).join(':').trim() : line.trim();
+          const slideWords = bank.words.slice((idx * 2) % bank.words.length, ((idx * 2) % bank.words.length) + 3);
+          if (slideWords.length === 0) slideWords.push(bank.words[0]);
+          slideWords.forEach(w => registerWordInDictionary(w, title));
+
+          return {
+            badge: `שָׁלָב ${idx + 1}: חֵקֶר וְהַמְחָשָׁה`,
+            title: stepTitle,
+            quote: `״${stepCore}״ — מתוך דנ״א הלמידה: ${manifesto}`,
+            story: `בְּשָׁלָב זֶה שֶׁל הַשִּׁעוּר אָנוּ חוֹקְרִים לְעֹמֶק אֶת הַנּוֹשֵׂא: ${stepCore}. הַתַּלְמִידִים צוֹפִים בַּהַמְחָשָׁה הַחָזוּתִית עַל הַבָּמָה, מְזַהִים אֶת מֻשְּׂגֵי הַמַּפְתֵּחַ וּמְחַבְּרִים אֶת הָרַעְיוֹן לְדּוּגְמָאוֹת מוּחָשִׁיּוֹת מֵחַיֵּי הַיּוֹמְיוֹם.`,
+            pedagogy: `הַנְחָיָה לַמּוֹרֶה (${grade} • ${mode}): הַדְגִּישׁוּ אֶת "${stepTitle}" דֶּרֶךְ הַמּוֹדֶל הַחַי וּבִדְקוּ הֲבָנָה בַּכִּתָּה.`,
+            holoType: bank.holoTypes[idx % bank.holoTypes.length],
+            holoCaption: `המחשה תלת-ממדית: ${stepTitle}`,
+            words: slideWords,
+            shortsDialogue: [
+              `דָּנִיֵּאל (NotebookLM): בַּחֵלֶק הַזֶּה שֶׁל הַמַּחְבֶּרֶת אֲנַחְנוּ מְגַלִּים אֵיךְ פּוֹעֵל הָעִקָּרוֹן שֶׁל "${stepTitle}".`,
+              `נוֹעָה (NotebookLM): בְּדִיּוּק! כְּשֶׁרוֹאִים אֶת "${stepCore}" בָּעֵינַיִם עַל הַבָּמָה, הַהֲבָנָה הוֹפֶכֶת בְּרוּרָה וּמוּחָשִׁית לְכָל תַּלְמִיד.`
+            ],
+            quiz: {
+              q: `מָהוּ הָעִקָּרוֹן הַמֶּרְכָּזִי שֶׁלָּמַדְנוּ וְהִמְחַשְׁנוּ בְּשָׁלָב זֶה (${stepTitle})?`,
+              options: [
+                stepCore,
+                bank.distractors[0],
+                bank.distractors[1],
+                bank.distractors[2]
+              ],
+              correct: 0
+            }
+          };
+        });
+      }
 
       const newLesson = {
         id: 'lesson-' + Date.now(),
@@ -2172,10 +2567,12 @@
         defaultStage,
         manifesto,
         slides,
-        isCustom: true
+        isCustom: true,
+        notebookUrl: (document.getElementById('studioNotebookUrl') && document.getElementById('studioNotebookUrl').value.trim()) ||
+                     (document.getElementById('mainNotebookLmUrlInput') && document.getElementById('mainNotebookLmUrlInput').value.trim()) ||
+                     'https://notebooklm.google.com/'
       };
 
-      newLesson.notebookUrl = (document.getElementById('studioNotebookUrl') && document.getElementById('studioNotebookUrl').value.trim()) || (document.getElementById('mainNotebookLmUrlInput') && document.getElementById('mainNotebookLmUrlInput').value.trim()) || 'https://notebooklm.google.com/';
       lessonsVault.unshift(newLesson);
       fetch('/api/notebooklm/create-lesson', {
         method: 'POST',
@@ -2292,9 +2689,100 @@
       });
     }
 
+    // Interactive Fraction Pizza State & Renderer
+    let fractionPizzaState = { totalSlices: 4, activeSlices: [0, 1] };
+
+    function setFractionSlices(count) {
+      fractionPizzaState.totalSlices = count;
+      const half = Math.max(1, Math.floor(count / 2));
+      fractionPizzaState.activeSlices = Array.from({ length: half }, (_, i) => i);
+      renderFractionPizzaLab();
+    }
+
+    function toggleFractionSlice(idx) {
+      const pos = fractionPizzaState.activeSlices.indexOf(idx);
+      if (pos >= 0) {
+        fractionPizzaState.activeSlices.splice(pos, 1);
+      } else {
+        fractionPizzaState.activeSlices.push(idx);
+      }
+      renderFractionPizzaLab();
+    }
+
+    function renderFractionPizzaLab() {
+      const svg = document.getElementById('fractionPizzaSvg');
+      if (!svg) return;
+      svg.innerHTML = '';
+      const total = fractionPizzaState.totalSlices;
+      const activeCount = fractionPizzaState.activeSlices.length;
+      const cx = 70, cy = 70, r = 58;
+
+      for (let i = 0; i < total; i++) {
+        const startAngle = (i * 2 * Math.PI) / total - Math.PI / 2;
+        const endAngle = ((i + 1) * 2 * Math.PI) / total - Math.PI / 2;
+        const x1 = cx + r * Math.cos(startAngle);
+        const y1 = cy + r * Math.sin(startAngle);
+        const x2 = cx + r * Math.cos(endAngle);
+        const y2 = cy + r * Math.sin(endAngle);
+        const isSelected = fractionPizzaState.activeSlices.includes(i);
+
+        const pathData = `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 0 1 ${x2} ${y2} Z`;
+        const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        pathEl.setAttribute('d', pathData);
+        pathEl.setAttribute('fill', isSelected ? '#FFB300' : '#1E2542');
+        pathEl.setAttribute('stroke', isSelected ? '#00E5FF' : '#4F5B93');
+        pathEl.setAttribute('stroke-width', isSelected ? '2.5' : '1.5');
+        pathEl.style.transition = 'all 0.2s ease';
+        pathEl.onclick = () => toggleFractionSlice(i);
+        svg.appendChild(pathEl);
+      }
+
+      const formulaEl = document.getElementById('fractionFormulaDisplay');
+      const hintEl = document.getElementById('fractionPedagogyHint');
+      const pct = Math.round((activeCount / total) * 100);
+      const gcd = (a, b) => (b === 0 ? a : gcd(b, a % b));
+      const g = gcd(activeCount, total);
+      const simpNum = activeCount / g;
+      const simpDen = total / g;
+      const equivStr = (g > 1 && activeCount > 0) ? ` = ${simpNum} / ${simpDen}` : '';
+
+      if (formulaEl) {
+        formulaEl.textContent = `${activeCount} / ${total}${equivStr} (${pct}%)`;
+      }
+      if (hintEl) {
+        if (activeCount === 0) {
+          hintEl.textContent = 'לַחֲצוּ עַל פְּרוּסוֹת הַפִּיצָה כְּדֵי לִבְחֹר חֲלָקִים מִתּוֹךְ הַשָּׁלֵם!';
+        } else if (activeCount === total) {
+          hintEl.textContent = `🎉 בְּחַרְתֶּם אֶת כָּל ${total} הַפְּרוּסוֹת — זֶהוּ שָׁלֵם אֶחָד מָלֵא (1 = ${total}/${total})!`;
+        } else if (activeCount * 2 === total) {
+          hintEl.textContent = `✨ שֶׁבֶר שְׁוֵה-עֵרֶךְ לַחֲצִי! ${activeCount} מִתּוֹךְ ${total} מְכַסִּים בְּדִיּוּק 1/2 מֵהַפִּיצָה!`;
+        } else {
+          hintEl.textContent = `בְּחַרְתֶּם ${activeCount} פְּרוּסוֹת מִתּוֹךְ ${total} חֲלָקִים שָׁוִים. נַסּוּ לְהַגִּיעַ לַחֲצִי הַמַּגָּשׁ!`;
+        }
+      }
+    }
+
     function downloadCurrentLessonStandalone() {
-      const htmlContent = document.documentElement.outerHTML;
-      const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+      // Clone clean document without browser extension attributes
+      const clone = document.documentElement.cloneNode(true);
+      clone.querySelectorAll('*').forEach(el => {
+        Array.from(el.attributes || []).forEach(attr => {
+          if (attr.name.startsWith('rtrvr-')) {
+            el.removeAttribute(attr.name);
+          }
+        });
+      });
+
+      let cleanHtml = '<!DOCTYPE html>\n' + clone.outerHTML;
+      const embeddedScript = `<script id="standalone-embedded-lesson-data">
+        window.__STANDALONE_LESSON__ = ${JSON.stringify(currentLesson)};
+        window.__STANDALONE_DICTIONARY__ = ${JSON.stringify(DICTIONARY_ITEMS)};
+      <\/script>`;
+
+      cleanHtml = cleanHtml.replace('<script id="standalone-embedded-lesson-data">[\s\S]*?<\/script>', '');
+      cleanHtml = cleanHtml.replace('</head>', embeddedScript + '\n</head>');
+
+      const blob = new Blob([cleanHtml], { type: 'text/html;charset=utf-8' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
       a.download = `${currentLesson.id || 'eduholo-lesson'}.html`;
@@ -2582,6 +3070,7 @@
 
     function connectNotebookLmFromBar() {
       const input = document.getElementById('mainNotebookLmUrlInput');
+      const topicSelect = document.getElementById('mainNotebookTopicSelect');
       const url = input ? input.value.trim() : '';
       if (!url) {
         alert('נא להדביק קישור למחברת או לתיקיית NotebookLM');
@@ -2590,22 +3079,40 @@
       const studioUrlInput = document.getElementById('studioNotebookUrl');
       if (studioUrlInput) studioUrlInput.value = url;
 
-      const slug = url.split('/').filter(Boolean).pop() || 'notebook-lesson';
-      const status = document.getElementById('notebookConnectionStatus');
-      if (status) {
-        status.textContent = '⚡ מחברת NotebookLM חוברה ונטענה לבמה: ' + slug;
+      const rawSlug = url.split('/').filter(Boolean).pop() || 'notebook-lesson';
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(rawSlug);
+      const selectedTopicId = topicSelect ? topicSelect.value : 'fractions-decomposition';
+
+      let targetLessonId = selectedTopicId;
+      const lowerSlug = rawSlug.toLowerCase();
+      if (!isUuid) {
+        if (lowerSlug.includes('sport') || lowerSlug.includes('jump') || lowerSlug.includes('pe')) {
+          targetLessonId = 'sports-jumps-comparison';
+        } else if (lowerSlug.includes('phet') || lowerSlug.includes('balance')) {
+          targetLessonId = 'math-sensory-quantities';
+        } else if (lowerSlug.includes('math') || lowerSlug.includes('fraction') || lowerSlug.includes('dna')) {
+          targetLessonId = 'fractions-decomposition';
+        } else if (lowerSlug.includes('genesis') || lowerSlug.includes('creation')) {
+          targetLessonId = 'genesis-7-days';
+        } else if (lowerSlug.includes('science') || lowerSlug.includes('solar') || lowerSlug.includes('water')) {
+          targetLessonId = 'science-matter-solar';
+        } else if (lowerSlug.includes('arch')) {
+          targetLessonId = 'archaeology-3d-layers';
+        } else if (lowerSlug.includes('sel')) {
+          targetLessonId = 'sel-empathy-regulation';
+        }
       }
 
-      if (slug.includes('sport') || slug.includes('jump') || slug.includes('pe')) {
-        loadLessonToStage('sports-jumps-comparison');
-      } else if (slug.includes('math') || slug.includes('phet')) {
-        loadLessonToStage('math-sensory-quantities');
-      } else if (slug.includes('genesis') || slug.includes('creation')) {
-        loadLessonToStage('genesis-7-days');
+      const foundCanonical = lessonsVault.find(l => l.id === targetLessonId) || BUILTIN_LESSONS.find(l => l.id === targetLessonId);
+      if (foundCanonical) {
+        foundCanonical.notebookUrl = url;
+        loadLessonToStage(foundCanonical.id);
+        const status = document.getElementById('notebookConnectionStatus');
+        if (status) {
+          status.textContent = '⚡ מחברת NotebookLM חוברה לבמה: ' + foundCanonical.title;
+        }
+        if (topicSelect) topicSelect.value = foundCanonical.id;
       } else {
-        document.getElementById('studioTitle').value = 'שיעור חי מ-NotebookLM: ' + slug.replace(/-/g, ' ');
-        document.getElementById('studioNotebookContent').value =
-          'פתיחה חושית מתוך מחברת ה-NotebookLM (' + slug + ')\nהמחשה תלת-ממדית ופירוק מושגי היסוד מהמחברת\nסיכום ויישום כיתתי מתוצרי ה-Studio';
         generateAndLaunchLesson();
       }
     }
@@ -2702,11 +3209,32 @@
     }
 
     window.addEventListener('DOMContentLoaded', () => {
+      if (window.__STANDALONE_DICTIONARY__ && Array.isArray(window.__STANDALONE_DICTIONARY__)) {
+        window.__STANDALONE_DICTIONARY__.forEach(d => {
+          if (!DICTIONARY_ITEMS.some(existing => existing.word === d.word)) {
+            DICTIONARY_ITEMS.push(d);
+          }
+        });
+      }
       initWebanglesInteractiveUI();
       initVault();
+      if (window.__STANDALONE_LESSON__ && window.__STANDALONE_LESSON__.id) {
+        const exists = lessonsVault.some(l => l.id === window.__STANDALONE_LESSON__.id);
+        if (!exists) {
+          lessonsVault.unshift(window.__STANDALONE_LESSON__);
+        } else {
+          lessonsVault = lessonsVault.map(l => l.id === window.__STANDALONE_LESSON__.id ? window.__STANDALONE_LESSON__ : l);
+        }
+        updateLibraryBadge();
+        renderLibraryGrid();
+      }
       initThreeHolo();
       initTimer();
-      loadLessonToStage('genesis-7-days');
+      renderFractionPizzaLab();
+      const initialLessonId = (window.__STANDALONE_LESSON__ && window.__STANDALONE_LESSON__.id)
+        ? window.__STANDALONE_LESSON__.id
+        : 'fractions-decomposition';
+      loadLessonToStage(initialLessonId);
     });
   </script>
 </body>
