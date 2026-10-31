@@ -30,64 +30,79 @@ const MIME_TYPES = {
   '.pdf': 'application/pdf'
 };
 
+const serveIndexHtml = (res) => {
+  let content = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
+  const patchScript = '<script src="/public/webangles_hover_and_notebooklm_patch.js"></script>';
+  if (content.includes('</body>')) {
+    content = content.replace('</body>', `${patchScript}\n</body>`);
+  } else {
+    content += patchScript;
+  }
+  res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+  res.end(content);
+};
+
 const server = http.createServer((req, res) => {
-  const urlObj = new URL(req.url, `http://${req.headers.host}`);
-  const pathname = decodeURIComponent(urlObj.pathname);
+  const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+  const pathname = url.pathname;
 
-  if (req.method === 'GET' && pathname === '/api/lessons') {
-    const lessons = fs.existsSync(VAULT_FILE) ? JSON.parse(fs.readFileSync(VAULT_FILE, 'utf8')) : [];
-    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
-    res.end(JSON.stringify({ lessons }));
+  if (req.method === 'GET' && pathname === '/api/vault') {
+    try {
+      const data = fs.readFileSync(VAULT_FILE, 'utf8');
+      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+      res.end(data);
+    } catch (e) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: e.message }));
+    }
     return;
   }
 
-  if (req.method === 'POST' && pathname === '/api/notebooklm/create-lesson') {
+  if (req.method === 'POST' && pathname === '/api/vault') {
     let body = '';
     req.on('data', chunk => { body += chunk; });
     req.on('end', () => {
       try {
-        const lesson = JSON.parse(body);
-        const lessons = fs.existsSync(VAULT_FILE) ? JSON.parse(fs.readFileSync(VAULT_FILE, 'utf8')) : [];
-        lessons.unshift(lesson);
-        fs.writeFileSync(VAULT_FILE, JSON.stringify(lessons, null, 2), 'utf8');
-        res.writeHead(201, { 'Content-Type': 'application/json; charset=utf-8' });
-        res.end(JSON.stringify({ status: 'saved', lesson }));
+        const item = JSON.parse(body);
+        const vault = JSON.parse(fs.readFileSync(VAULT_FILE, 'utf8'));
+        vault.push(item);
+        fs.writeFileSync(VAULT_FILE, JSON.stringify(vault, null, 2), 'utf8');
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: true, item }));
       } catch (e) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.writeHead(500, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: e.message }));
       }
     });
     return;
   }
 
-  if (req.method === 'POST' && pathname === '/api/notebooklm/share-folder') {
-    let body = '';
-    req.on('data', chunk => { body += chunk; });
-    req.on('end', () => {
-      try {
-        const data = JSON.parse(body);
-        fs.writeFileSync(FOLDER_FILE, JSON.stringify(data, null, 2), 'utf8');
-        res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
-        res.end(JSON.stringify({ status: 'synced' }));
-      } catch (e) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: e.message }));
-      }
-    });
+  if (req.method === 'GET' && pathname === '/api/folder') {
+    try {
+      const data = fs.existsSync(FOLDER_FILE) ? fs.readFileSync(FOLDER_FILE, 'utf8') : JSON.stringify({ folder: [] });
+      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+      res.end(data);
+    } catch (e) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: e.message }));
+    }
     return;
   }
 
   let filePath = pathname === '/' ? path.join(__dirname, 'index.html') : path.join(__dirname, pathname);
   if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
     const ext = path.extname(filePath).toLowerCase();
-    res.writeHead(200, { 'Content-Type': MIME_TYPES[ext] || 'application/octet-stream' });
-    fs.createReadStream(filePath).pipe(res);
+    if (filePath.endsWith('index.html') || pathname === '/') {
+      serveIndexHtml(res);
+    } else {
+      res.writeHead(200, { 'Content-Type': MIME_TYPES[ext] || 'application/octet-stream' });
+      fs.createReadStream(filePath).pipe(res);
+    }
   } else {
-    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-    fs.createReadStream(path.join(__dirname, 'index.html')).pipe(res);
+    serveIndexHtml(res);
   }
 });
 
 server.listen(PORT, () => {
-  console.log(`EduHolo Studio + Webangles Server running at http://localhost:${PORT}`);
+  console.log(`Server listening on port ${PORT}`);
 });
